@@ -28,8 +28,12 @@ RPM командой `sudo dnf install ./pdf-bars-1.7-1.x86_64.rpm`.
 ## Запуск из исходников
 
 Требуется Python 3.8+ и Tk. На Linux установите python3-tkinter, Ghostscript и
-клиент CUPS. Для DOCX → PDF нужен установленный Microsoft Word на Windows
-или Р7-Офис на Linux; эти программы не входят в комплект.
+клиент CUPS. Для DOCX/DOC → PDF автоматически выбирается установленный
+Microsoft Word (Windows), Р7/ONLYOFFICE, LibreOffice или OpenOffice.
+При ошибке конвертера программа пробует следующий доступный вариант.
+Для нестандартного расположения soffice задайте `PDF_BARS_OFFICE_CONVERTER`.
+Эти офисные программы не входят в комплект; для Р7/ONLYOFFICE один раз
+откройте документ в редакторе, чтобы подготовить его базу шрифтов.
 
 ```sh
 python -m pip install -e .

@@ -246,6 +246,7 @@ def test_r7_docx_pdf_reports_uninitialized_font_cache(tmp_path, monkeypatch):
     monkeypatch.setattr(converters.sys, "platform", "linux")
     monkeypatch.setattr(converters, "find_r7_converter", lambda: "/opt/r7-office/desktopeditors/converter/x2t")
     monkeypatch.setattr(converters, "find_r7_font_cache", lambda: None)
+    monkeypatch.setattr(converters, "find_libreoffice_converter", lambda: None)
 
     try:
         converters.docx_to_pdf([source], tmp_path / "out")

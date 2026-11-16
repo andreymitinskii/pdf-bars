@@ -145,22 +145,52 @@ def docx_to_pdf(
     if not documents:
         raise ValueError("Нужно выбрать хотя бы один DOCX/DOC")
     inputs = _validate_documents(documents, DOCX_SUFFIXES)
-    if sys.platform.startswith("win"):
-        word = find_microsoft_word()
-        if not word:
-            raise RuntimeError("Для преобразования DOCX/DOC в PDF требуется установленный Microsoft Word")
-        return _convert_with_microsoft_word(inputs, output_dir, ".pdf", progress)
+    backends = []
+    if sys.platform.startswith("win") and find_microsoft_word():
+        backends.append(("Microsoft Word", lambda items, folder, report:
+                         _convert_with_microsoft_word(items, folder, ".pdf", report)))
     r7_converter = find_r7_converter()
     if r7_converter:
-        return _convert_with_r7(inputs, output_dir, ".pdf", r7_converter, progress)
-
+        backends.append(("Р7 / ONLYOFFICE", lambda items, folder, report:
+                         _convert_with_r7(items, folder, ".pdf", r7_converter, report)))
     office = soffice_path or find_libreoffice_converter()
-    if not office:
+    if office:
+        backend = ("LibreOffice / OpenOffice", lambda items, folder, report:
+                   _convert_with_libreoffice(items, folder, office, report))
+        if soffice_path:
+            backends.insert(0, backend)
+        else:
+            backends.append(backend)
+    if not backends:
         raise RuntimeError(
-            "Не найден R7-Office или совместимый офисный конвертер DOCX в PDF. "
-            "Установите R7-Office; LibreOffice используется только как резервный движок."
+            "Не найден офисный конвертер DOCX/DOC в PDF. Установите Microsoft Word "
+            "(Windows), Р7-Офис, ONLYOFFICE, LibreOffice или OpenOffice. "
+            "Для Р7/ONLYOFFICE один раз откройте документ, чтобы подготовить базу шрифтов."
         )
-    return _convert_with_libreoffice(inputs, output_dir, office, progress)
+    out_dir = Path(output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    outputs = []
+    for index, document in enumerate(inputs):
+        failures = []
+        for label, convert in backends:
+            if progress:
+                progress(index, len(inputs), f"{label}: {document.name}")
+            try:
+                # Isolate failed/partial exports, including a backend failure after
+                # creating its output. Never expose those files as successful PDFs.
+                with tempfile.TemporaryDirectory(prefix="pdf-bars-office-") as folder:
+                    generated = convert([document], folder, None)[0]
+                    destination = available_output_path(out_dir / f"{document.stem}.pdf")
+                    shutil.move(str(generated), str(destination))
+                outputs.append(destination)
+                if progress:
+                    progress(index + 1, len(inputs), f"Готово: {document.name}")
+                break
+            except (RuntimeError, OSError, subprocess.SubprocessError) as exc:
+                failures.append(f"{label}: {exc}")
+        else:
+            raise RuntimeError(f"Не удалось преобразовать {document.name}. " + "\n".join(failures))
+    return outputs
 
 
 def pdf_to_docx(
@@ -254,6 +284,9 @@ def find_r7_font_cache() -> Path | None:
     candidates = (
         data_home / "r7-office" / "editors" / "data" / "fonts" / "AllFonts.js",
         data_home / "R7-Office" / "editors" / "data" / "fonts" / "AllFonts.js",
+        data_home / "onlyoffice" / "desktopeditors" / "data" / "fonts" / "AllFonts.js",
+        Path(os.environ.get("LOCALAPPDATA", Path.home())) / "R7-Office" / "editors" / "data" / "fonts" / "AllFonts.js",
+        Path(os.environ.get("LOCALAPPDATA", Path.home())) / "ONLYOFFICE" / "DesktopEditors" / "data" / "fonts" / "AllFonts.js",
     )
     for candidate in candidates:
         try:
@@ -582,7 +615,13 @@ def find_r7_converter() -> Optional[str]:
     candidates = (
         "/opt/r7-office/desktopeditors/converter/x2t",
         "/opt/r7-office/desktopeditors/x2t",
+        "/opt/onlyoffice/desktopeditors/converter/x2t",
+        "/opt/onlyoffice/desktopeditors/x2t",
     )
+    for base in (os.environ.get("ProgramFiles"), os.environ.get("ProgramFiles(x86)"), os.environ.get("LOCALAPPDATA")):
+        if base:
+            candidates += tuple(str(Path(base) / vendor / "DesktopEditors" / "converter" / "x2t.exe")
+                                for vendor in ("R7-Office", "ONLYOFFICE"))
     for candidate in candidates:
         if Path(candidate).is_file() and os.access(candidate, os.X_OK):
             return candidate
@@ -590,11 +629,20 @@ def find_r7_converter() -> Optional[str]:
 
 
 def find_libreoffice_converter() -> Optional[str]:
-    for candidate in ("soffice", "libreoffice", "lowriter"):
+    override = os.environ.get("PDF_BARS_OFFICE_CONVERTER", "").strip()
+    if override and Path(override).is_file():
+        return override
+    for candidate in ("soffice", "soffice.exe", "libreoffice", "lowriter"):
         path = shutil.which(candidate)
         if path:
             return path
-    for candidate in ("/usr/bin/soffice", "/usr/bin/libreoffice", "/opt/libreoffice/program/soffice"):
+    candidates = ["/usr/bin/soffice", "/usr/bin/libreoffice", "/opt/libreoffice/program/soffice"]
+    for base in (os.environ.get("ProgramFiles"), os.environ.get("ProgramFiles(x86)")):
+        if base:
+            candidates.extend(str(Path(base) / office / "program" / executable)
+                              for office in ("LibreOffice", "OpenOffice 4")
+                              for executable in ("soffice.com", "soffice.exe"))
+    for candidate in candidates:
         if Path(candidate).exists():
             return candidate
     return None
@@ -602,7 +650,7 @@ def find_libreoffice_converter() -> Optional[str]:
 
 def find_office_converter() -> Optional[str]:
     if os.name == "nt":
-        return find_microsoft_word()
+        return find_microsoft_word() or find_r7_converter() or find_libreoffice_converter()
     return find_r7_converter() or find_libreoffice_converter()
 
 
