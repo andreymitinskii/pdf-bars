@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .i18n import tr
+
 import os
 import re
 import shutil
@@ -89,19 +91,19 @@ def remove_temporary_print_file(path: str | Path) -> None:
 def submit_pdf_print_job(source: str | Path, options: PrintOptions) -> str:
     path = Path(source)
     if path.suffix.lower() != ".pdf" or not path.is_file():
-        raise ValueError("Для печати требуется существующий PDF-файл")
+        raise ValueError(tr("Для печати требуется существующий PDF-файл"))
     if not 1 <= int(options.copies) <= 999:
-        raise ValueError("Количество копий должно быть от 1 до 999")
+        raise ValueError(tr("Количество копий должно быть от 1 до 999"))
     page_range = options.page_range.replace(" ", "")
     if page_range and not re.fullmatch(r"\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*", page_range):
-        raise ValueError("Диапазон страниц задаётся, например, так: 1-3,5,8")
+        raise ValueError(tr("Диапазон страниц задаётся, например, так: 1-3,5,8"))
 
     if os.name == "nt":
         return _submit_windows_print_job(path)
 
     command = shutil.which("lp")
     if not command:
-        raise RuntimeError("Не найдена команда печати lp. Установите системный пакет cups-client.")
+        raise RuntimeError(tr("Не найдена команда печати lp. Установите системный пакет cups-client."))
     arguments = [command]
     if options.printer:
         arguments.extend(("-d", options.printer))
@@ -124,8 +126,8 @@ def submit_pdf_print_job(source: str | Path, options: PrintOptions) -> str:
     )
     if completed.returncode != 0:
         details = (completed.stderr or completed.stdout or "").strip()
-        raise RuntimeError(f"Система печати не приняла документ. {details}")
-    return completed.stdout.strip() or "Задание принято системой печати"
+        raise RuntimeError(tr(f"Система печати не приняла документ. {details}"))
+    return completed.stdout.strip() or tr("Задание принято системой печати")
 
 
 def _submit_windows_print_job(path: Path) -> str:
@@ -145,10 +147,10 @@ def _submit_windows_print_job(path: Path) -> str:
         handle = shell_execute(None, "print", str(path), None, str(path.parent), 0)
         result = int(handle or 0)
     except (AttributeError, OSError) as exc:
-        raise RuntimeError("Не удалось открыть системную печать Windows") from exc
+        raise RuntimeError(tr("Не удалось открыть системную печать Windows")) from exc
     if result <= 32:
-        raise RuntimeError(f"Windows не смогла передать документ на печать (код {result})")
-    return "Документ передан в системное окно печати"
+        raise RuntimeError(tr(f"Windows не смогла передать документ на печать (код {result})"))
+    return tr("Документ передан в системное окно печати")
 
 
 def _safe_stem(value: str) -> str:

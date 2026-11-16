@@ -5,11 +5,52 @@ import tempfile
 import time
 
 import fitz
-from PIL import ImageGrab
+from PIL import Image
 
 from redos_pdf_combiner import gui
 from redos_pdf_combiner.editor import TextEdit
 from redos_pdf_combiner.preferences import DEFAULT_PREFERENCES
+
+
+def capture_window(hwnd):
+    from ctypes import wintypes
+    user32, gdi32 = ctypes.windll.user32, ctypes.windll.gdi32
+    user32.GetWindowRect.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.RECT)]
+    user32.GetWindowDC.argtypes = [wintypes.HWND]
+    user32.GetWindowDC.restype = wintypes.HDC
+    user32.PrintWindow.argtypes = [wintypes.HWND, wintypes.HDC, wintypes.UINT]
+    user32.ReleaseDC.argtypes = [wintypes.HWND, wintypes.HDC]
+    gdi32.CreateCompatibleDC.argtypes = [wintypes.HDC]
+    gdi32.CreateCompatibleDC.restype = wintypes.HDC
+    gdi32.CreateCompatibleBitmap.argtypes = [wintypes.HDC, ctypes.c_int, ctypes.c_int]
+    gdi32.CreateCompatibleBitmap.restype = wintypes.HBITMAP
+    gdi32.SelectObject.argtypes = [wintypes.HDC, wintypes.HGDIOBJ]
+    gdi32.SelectObject.restype = wintypes.HGDIOBJ
+    gdi32.GetDIBits.argtypes = [wintypes.HDC, wintypes.HBITMAP, wintypes.UINT, wintypes.UINT,
+                              ctypes.c_void_p, ctypes.c_void_p, wintypes.UINT]
+    gdi32.DeleteObject.argtypes = [wintypes.HGDIOBJ]
+    gdi32.DeleteDC.argtypes = [wintypes.HDC]
+    rect = wintypes.RECT()
+    assert user32.GetWindowRect(hwnd, ctypes.byref(rect))
+    width, height = rect.right - rect.left, rect.bottom - rect.top
+    screen = user32.GetWindowDC(hwnd)
+    memory = gdi32.CreateCompatibleDC(screen)
+    bitmap = gdi32.CreateCompatibleBitmap(screen, width, height)
+    previous = gdi32.SelectObject(memory, bitmap)
+    try:
+        assert user32.PrintWindow(hwnd, memory, 2), 'Window-only capture failed'
+        gdi32.SelectObject(memory, previous)
+        info = ctypes.create_string_buffer(40)
+        import struct
+        info.raw = struct.pack('<IiiHHIIiiII', 40, width, -height, 1, 32, 0, width * height * 4, 0, 0, 0, 0)
+        pixels = ctypes.create_string_buffer(width * height * 4)
+        assert gdi32.GetDIBits(memory, bitmap, 0, height, pixels, info, 0) == height
+        return Image.frombytes('RGB', (width, height), pixels.raw, 'raw', 'BGRX')
+    finally:
+        gdi32.SelectObject(memory, previous)
+        gdi32.DeleteObject(bitmap)
+        gdi32.DeleteDC(memory)
+        user32.ReleaseDC(hwnd, screen)
 
 
 def main():
@@ -39,8 +80,11 @@ def main():
 
         def capture(name):
             settle()
+            from ctypes import wintypes
+            ctypes.windll.user32.GetAncestor.argtypes = [wintypes.HWND, wintypes.UINT]
+            ctypes.windll.user32.GetAncestor.restype = wintypes.HWND
             hwnd = ctypes.windll.user32.GetAncestor(app.winfo_id(), 2)
-            with ImageGrab.grab(window=hwnd) as image:
+            with capture_window(hwnd) as image:
                 assert image.convert("L").getextrema()[0] != image.convert("L").getextrema()[1]
                 image.save(output / (name + ".png"))
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .i18n import tr
+
 import math
 import os
 import shutil
@@ -31,21 +33,21 @@ PDFSETTINGS = {
 
 COMPRESSION_PRESETS = {
     "maximum": {
-        "label": "Максимальное сжатие",
+        "label": tr("Максимальное сжатие"),
         "image_dpi": 110,
         "mono_dpi": 300,
         "jpeg_quality": 45,
         "pdfsettings": "/screen",
     },
     "medium": {
-        "label": "Оптимальное сжатие",
+        "label": tr("Оптимальное сжатие"),
         "image_dpi": 150,
         "mono_dpi": 300,
         "jpeg_quality": 70,
         "pdfsettings": "/ebook",
     },
     "minimum": {
-        "label": "Минимальное сжатие без потери качества",
+        "label": tr("Минимальное сжатие без потери качества"),
         "lossless": True,
     },
 }
@@ -114,7 +116,7 @@ def estimate_compression_size(
 def ensure_pdf_path(path: os.PathLike[str] | str) -> Path:
     value = Path(path)
     if value.suffix.lower() != ".pdf":
-        raise ValueError(f"Файл должен быть PDF: {value}")
+        raise ValueError(tr(f"Файл должен быть PDF: {value}"))
     return value
 
 
@@ -150,7 +152,7 @@ def parse_pages(spec: str, total_pages: int) -> List[int]:
 
         for index in indexes:
             if index < 0 or index >= total_pages:
-                raise ValueError(f"Страница вне диапазона: {index + 1}")
+                raise ValueError(tr(f"Страница вне диапазона: {index + 1}"))
             if index not in seen:
                 seen.add(index)
                 result.append(index)
@@ -159,7 +161,7 @@ def parse_pages(spec: str, total_pages: int) -> List[int]:
 
 def merge_pdfs(inputs: Sequence[os.PathLike[str] | str], output: os.PathLike[str] | str) -> Path:
     if not inputs:
-        raise ValueError("Нужно выбрать хотя бы один PDF")
+        raise ValueError(tr("Нужно выбрать хотя бы один PDF"))
     writer = PdfWriter()
     for input_path in inputs:
         reader = _reader(input_path)
@@ -184,13 +186,13 @@ def delete_pages(input_pdf: os.PathLike[str] | str, pages: str, output: os.PathL
         if index not in deleted:
             writer.add_page(page)
     if not writer.pages:
-        raise ValueError("После удаления не осталось страниц")
+        raise ValueError(tr("После удаления не осталось страниц"))
     return _write(writer, output)
 
 
 def rotate_pages(input_pdf: os.PathLike[str] | str, pages: str, degrees: int, output: os.PathLike[str] | str) -> Path:
     if degrees % 90 != 0:
-        raise ValueError("Поворот должен быть кратен 90 градусам")
+        raise ValueError(tr("Поворот должен быть кратен 90 градусам"))
     reader = _reader(input_pdf)
     selected = set(parse_pages(pages, len(reader.pages)))
     writer = PdfWriter()
@@ -220,7 +222,7 @@ def split_pdf_each_page(input_pdf: os.PathLike[str] | str, output_dir: os.PathLi
 
 def split_pdf_every(input_pdf: os.PathLike[str] | str, output_dir: os.PathLike[str] | str, pages_per_file: int) -> List[Path]:
     if pages_per_file < 1:
-        raise ValueError("Количество страниц в части должно быть больше нуля")
+        raise ValueError(tr("Количество страниц в части должно быть больше нуля"))
     reader = _reader(input_pdf)
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -244,7 +246,7 @@ def encrypt_pdf(
     owner_password: Optional[str] = None,
 ) -> Path:
     if not user_password:
-        raise ValueError("Нужен пароль пользователя")
+        raise ValueError(tr("Нужен пароль пользователя"))
     reader = _reader(input_pdf)
     writer = PdfWriter()
     for page in reader.pages:
@@ -256,7 +258,7 @@ def encrypt_pdf(
 def decrypt_pdf(input_pdf: os.PathLike[str] | str, output: os.PathLike[str] | str, password: str) -> Path:
     reader = PdfReader(str(input_pdf))
     if reader.is_encrypted and not reader.decrypt(password):
-        raise ValueError("Не удалось открыть PDF с указанным паролем")
+        raise ValueError(tr("Не удалось открыть PDF с указанным паролем"))
     writer = PdfWriter()
     for page in reader.pages:
         writer.add_page(page)
@@ -350,7 +352,7 @@ def compress_pdf_preset(
     output_path = ensure_pdf_path(output)
     color_mode_key = _normalize_pdf_color_mode(color_mode)
     if source.resolve() == output_path.resolve() or (output_path.exists() and os.path.samefile(source, output_path)):
-        raise ValueError("Сохраните сжатый документ под новым именем")
+        raise ValueError(tr("Сохраните сжатый документ под новым именем"))
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(prefix=".pdf-bars-compress-", dir=str(output_path.parent)) as temporary:
         candidate = Path(temporary) / "candidate.pdf"
@@ -386,7 +388,7 @@ def _compress_pdf_preset_candidate(
     gs = find_ghostscript()
     if not gs:
         if color_mode_key == "grayscale":
-            raise RuntimeError("Для сохранения PDF в оттенках серого требуется Ghostscript")
+            raise RuntimeError(tr("Для сохранения PDF в оттенках серого требуется Ghostscript"))
         return compress_pdf(input_pdf, output_path, quality="ebook", prefer_ghostscript=False)
 
     settings = COMPRESSION_PRESETS[preset_key] if preset_key != "minimum" else {
@@ -451,13 +453,13 @@ def compress_pdf_to_size(
     try:
         target_value = float(target_mb)
     except (TypeError, ValueError) as exc:
-        raise ValueError("Целевой размер должен быть числом") from exc
+        raise ValueError(tr("Целевой размер должен быть числом")) from exc
     if not math.isfinite(target_value) or target_value <= 0:
-        raise ValueError("Целевой размер должен быть больше нуля")
+        raise ValueError(tr("Целевой размер должен быть больше нуля"))
     if not input_path.exists():
-        raise FileNotFoundError(f"Файл не найден: {input_path}")
+        raise FileNotFoundError(tr(f"Файл не найден: {input_path}"))
     if input_path.resolve() == output_path.resolve():
-        raise ValueError("Для результата выберите другое имя файла")
+        raise ValueError(tr("Для результата выберите другое имя файла"))
 
     target_bytes = max(1, round(target_value * 1024 * 1024))
     source_size = input_path.stat().st_size
@@ -553,15 +555,15 @@ def compress_pdfs_to_total_size(
     inputs = [ensure_pdf_path(path) for path in input_pdfs]
     outputs = [ensure_pdf_path(path) for path in output_pdfs]
     if not inputs:
-        raise ValueError("Добавьте хотя бы один PDF")
+        raise ValueError(tr("Добавьте хотя бы один PDF"))
     if len(inputs) != len(outputs):
-        raise ValueError("Количество исходных и выходных PDF не совпадает")
+        raise ValueError(tr("Количество исходных и выходных PDF не совпадает"))
     try:
         target_value = float(target_mb)
     except (TypeError, ValueError) as exc:
-        raise ValueError("Целевой размер должен быть числом") from exc
+        raise ValueError(tr("Целевой размер должен быть числом")) from exc
     if not math.isfinite(target_value) or target_value <= 0:
-        raise ValueError("Целевой размер должен быть больше нуля")
+        raise ValueError(tr("Целевой размер должен быть больше нуля"))
 
     target_bytes = max(1, int(target_value * 1024 * 1024))
     source_sizes = [max(1, path.stat().st_size) for path in inputs]
@@ -602,7 +604,7 @@ def _compress_pdf_gs_custom(
 ) -> Path:
     gs = find_ghostscript()
     if not gs:
-        raise RuntimeError("Для сжатия до заданного размера требуется Ghostscript")
+        raise RuntimeError(tr("Для сжатия до заданного размера требуется Ghostscript"))
     output_path = ensure_pdf_path(output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     command = [
@@ -650,7 +652,7 @@ def _rasterize_pdf_monochrome(
         import fitz
         from PIL import Image, ImageOps
     except ImportError as exc:
-        raise RuntimeError("Для чёрно-белого режима требуются PyMuPDF и Pillow") from exc
+        raise RuntimeError(tr("Для чёрно-белого режима требуются PyMuPDF и Pillow")) from exc
 
     output_path = ensure_pdf_path(output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -664,7 +666,7 @@ def _rasterize_pdf_monochrome(
             pages.append(image.point(lambda value: 255 if value >= 180 else 0, mode="1"))
             image.close()
     if not pages:
-        raise ValueError("PDF не содержит страниц")
+        raise ValueError(tr("PDF не содержит страниц"))
     first, rest = pages[0], pages[1:]
     first.save(str(output_path), "PDF", resolution=dpi, save_all=True, append_images=rest)
     for page in pages:
@@ -699,17 +701,17 @@ def _normalize_compression_preset(preset: str) -> str:
     aliases = {
         "max": "maximum",
         "maximum": "maximum",
-        "максимальное": "maximum",
+        tr("максимальное"): "maximum",
         "medium": "medium",
         "mid": "medium",
-        "среднее": "medium",
+        tr("среднее"): "medium",
         "min": "minimum",
         "minimum": "minimum",
-        "минимальное": "minimum",
+        tr("минимальное"): "minimum",
         "lossless": "minimum",
     }
     if value not in aliases:
-        raise ValueError("Неизвестный пресет сжатия")
+        raise ValueError(tr("Неизвестный пресет сжатия"))
     return aliases[value]
 
 
@@ -717,18 +719,18 @@ def _normalize_pdf_color_mode(mode: str) -> str:
     value = (mode or "color").strip().lower()
     aliases = {
         "color": "color",
-        "цветной": "color",
+        tr("цветной"): "color",
         "grayscale": "grayscale",
         "gray": "grayscale",
-        "серый": "grayscale",
+        tr("серый"): "grayscale",
         "monochrome": "monochrome",
         "mono": "monochrome",
         "blackwhite": "monochrome",
-        "чёрно-белый": "monochrome",
-        "черно-белый": "monochrome",
+        tr("чёрно-белый"): "monochrome",
+        tr("черно-белый"): "monochrome",
     }
     if value not in aliases:
-        raise ValueError("Неизвестный цветовой режим PDF")
+        raise ValueError(tr("Неизвестный цветовой режим PDF"))
     return aliases[value]
 
 
@@ -742,7 +744,7 @@ def add_text_watermark(
     angle: float = 35.0,
 ) -> Path:
     if not text:
-        raise ValueError("Текст водяного знака не должен быть пустым")
+        raise ValueError(tr("Текст водяного знака не должен быть пустым"))
     reader = _reader(input_pdf)
     writer = PdfWriter()
     selected = set(parse_pages(pages, len(reader.pages)))
@@ -791,7 +793,7 @@ def _reader(path: os.PathLike[str] | str) -> PdfReader:
         raise FileNotFoundError(str(pdf_path))
     reader = PdfReader(str(pdf_path))
     if reader.is_encrypted:
-        raise ValueError("PDF зашифрован. Сначала выполните расшифровку или укажите пароль.")
+        raise ValueError(tr("PDF зашифрован. Сначала выполните расшифровку или укажите пароль."))
     return reader
 
 
@@ -807,9 +809,9 @@ def _page_number_to_index(value: str, total_pages: int) -> int:
     try:
         number = int(value.strip())
     except ValueError as exc:
-        raise ValueError(f"Неверный номер страницы: {value}") from exc
+        raise ValueError(tr(f"Неверный номер страницы: {value}")) from exc
     if number == 0:
-        raise ValueError("Нумерация страниц начинается с 1")
+        raise ValueError(tr("Нумерация страниц начинается с 1"))
     if number < 0:
         return total_pages + number
     return number - 1

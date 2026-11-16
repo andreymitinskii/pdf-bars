@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .i18n import tr
+
 import os
 import shutil
 import subprocess
@@ -37,7 +39,7 @@ def available_output_path(path: os.PathLike[str] | str) -> Path:
         numbered = candidate.with_name(f"{candidate.stem} ({number}){candidate.suffix}")
         if not numbered.exists():
             return numbered
-    raise RuntimeError(f"Не удалось подобрать свободное имя для файла: {candidate.name}")
+    raise RuntimeError(tr(f"Не удалось подобрать свободное имя для файла: {candidate.name}"))
 
 
 def images_to_pdf(
@@ -48,18 +50,18 @@ def images_to_pdf(
 ) -> Path:
     """Create one PDF from images, including WEBP."""
     if not images:
-        raise ValueError("Нужно выбрать хотя бы одно изображение")
+        raise ValueError(tr("Нужно выбрать хотя бы одно изображение"))
     if dpi < 36 or dpi > 1200:
-        raise ValueError("DPI должен быть в диапазоне 36..1200")
+        raise ValueError(tr("DPI должен быть в диапазоне 36..1200"))
 
     try:
         from PIL import Image, ImageOps
     except ImportError as exc:
-        raise RuntimeError("Не установлена зависимость Pillow. Установите пакет pillow.") from exc
+        raise RuntimeError(tr("Не установлена зависимость Pillow. Установите пакет pillow.")) from exc
 
     output_path = Path(output)
     if output_path.suffix.lower() != ".pdf":
-        raise ValueError("Выходной файл должен иметь расширение .pdf")
+        raise ValueError(tr("Выходной файл должен иметь расширение .pdf"))
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     pages = []
@@ -67,7 +69,7 @@ def images_to_pdf(
         for image_path in images:
             path = input_path(image_path)
             if path.suffix.lower() not in IMAGE_SUFFIXES:
-                raise ValueError(f"Неподдерживаемый формат изображения: {path}")
+                raise ValueError(tr(f"Неподдерживаемый формат изображения: {path}"))
             with Image.open(path) as original, ImageOps.exif_transpose(original) as image:
                 pages.append(_image_to_rgb_page(image, background))
         first, rest = pages[0], pages[1:]
@@ -101,23 +103,23 @@ def pdf_to_images(
     """Render every PDF page to image files. Default output format is JPG."""
     pdf_path = Path(input_pdf)
     if pdf_path.suffix.lower() != ".pdf":
-        raise ValueError("Нужно выбрать PDF-файл")
+        raise ValueError(tr("Нужно выбрать PDF-файл"))
     if not pdf_path.exists():
         raise FileNotFoundError(str(pdf_path))
     if dpi < 36 or dpi > 1200:
-        raise ValueError("DPI должен быть в диапазоне 36..1200")
+        raise ValueError(tr("DPI должен быть в диапазоне 36..1200"))
 
     fmt_key = image_format.lower().lstrip(".")
     if fmt_key == "jpeg":
         fmt_key = "jpg"
     if fmt_key not in PDF_IMAGE_FORMATS:
-        raise ValueError("Поддерживаются форматы: JPG, PNG, WEBP, TIFF")
+        raise ValueError(tr("Поддерживаются форматы: JPG, PNG, WEBP, TIFF"))
 
     try:
         import fitz
         from PIL import Image
     except ImportError as exc:
-        raise RuntimeError("Не установлены зависимости PyMuPDF/Pillow для преобразования PDF в изображения.") from exc
+        raise RuntimeError(tr("Не установлены зависимости PyMuPDF/Pillow для преобразования PDF в изображения.")) from exc
 
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -143,7 +145,7 @@ def docx_to_pdf(
     progress: Optional[ConversionProgress] = None,
 ) -> List[Path]:
     if not documents:
-        raise ValueError("Нужно выбрать хотя бы один DOCX/DOC")
+        raise ValueError(tr("Нужно выбрать хотя бы один DOCX/DOC"))
     inputs = _validate_documents(documents, DOCX_SUFFIXES)
     backends = []
     if sys.platform.startswith("win") and find_microsoft_word():
@@ -151,7 +153,7 @@ def docx_to_pdf(
                          _convert_with_microsoft_word(items, folder, ".pdf", report)))
     r7_converter = find_r7_converter()
     if r7_converter:
-        backends.append(("Р7 / ONLYOFFICE", lambda items, folder, report:
+        backends.append((tr("Р7 / ONLYOFFICE"), lambda items, folder, report:
                          _convert_with_r7(items, folder, ".pdf", r7_converter, report)))
     office = soffice_path or find_libreoffice_converter()
     if office:
@@ -163,9 +165,9 @@ def docx_to_pdf(
             backends.append(backend)
     if not backends:
         raise RuntimeError(
-            "Не найден офисный конвертер DOCX/DOC в PDF. Установите Microsoft Word "
+            tr("Не найден офисный конвертер DOCX/DOC в PDF. Установите Microsoft Word "
             "(Windows), Р7-Офис, ONLYOFFICE, LibreOffice или OpenOffice. "
-            "Для Р7/ONLYOFFICE один раз откройте документ, чтобы подготовить базу шрифтов."
+            "Для Р7/ONLYOFFICE один раз откройте документ, чтобы подготовить базу шрифтов.")
         )
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -184,12 +186,12 @@ def docx_to_pdf(
                     shutil.move(str(generated), str(destination))
                 outputs.append(destination)
                 if progress:
-                    progress(index + 1, len(inputs), f"Готово: {document.name}")
+                    progress(index + 1, len(inputs), tr(f"Готово: {document.name}"))
                 break
             except (RuntimeError, OSError, subprocess.SubprocessError) as exc:
                 failures.append(f"{label}: {exc}")
         else:
-            raise RuntimeError(f"Не удалось преобразовать {document.name}. " + "\n".join(failures))
+            raise RuntimeError(tr(f"Не удалось преобразовать {document.name}. ") + "\n".join(failures))
     return outputs
 
 
@@ -200,16 +202,16 @@ def pdf_to_docx(
     progress: Optional[ConversionProgress] = None,
 ) -> List[Path]:
     if not documents:
-        raise ValueError("Нужно выбрать хотя бы один PDF")
+        raise ValueError(tr("Нужно выбрать хотя бы один PDF"))
     inputs = _validate_documents(documents, {".pdf"})
     if sys.platform.startswith("win"):
         word = find_microsoft_word()
         if not word:
-            raise RuntimeError("Для преобразования PDF в DOCX требуется установленный Microsoft Word")
+            raise RuntimeError(tr("Для преобразования PDF в DOCX требуется установленный Microsoft Word"))
         return _convert_with_microsoft_word(inputs, output_dir, ".docx", progress)
     converter = converter_path or find_r7_converter()
     if not converter:
-        raise RuntimeError("Для преобразования PDF в DOCX требуется установленный R7-Office")
+        raise RuntimeError(tr("Для преобразования PDF в DOCX требуется установленный R7-Office"))
     return _convert_with_r7(inputs, output_dir, ".docx", converter, progress)
 
 
@@ -221,7 +223,7 @@ def _validate_documents(
     for document in documents:
         path = Path(document)
         if path.suffix.lower() not in suffixes:
-            raise ValueError(f"Неподдерживаемый формат документа: {path}")
+            raise ValueError(tr(f"Неподдерживаемый формат документа: {path}"))
         if not path.exists():
             raise FileNotFoundError(str(path))
         inputs.append(path)
@@ -242,8 +244,8 @@ def _convert_with_r7(
     r7_font_cache = find_r7_font_cache() if target_suffix == ".pdf" else None
     if target_suffix == ".pdf" and r7_font_cache is None:
         raise RuntimeError(
-            "R7-Office ещё не подготовил базу шрифтов для пакетного экспорта. "
-            "Один раз запустите R7-Office и откройте любой документ, затем повторите преобразование."
+            tr("R7-Office ещё не подготовил базу шрифтов для пакетного экспорта. "
+            "Один раз запустите R7-Office и откройте любой документ, затем повторите преобразование.")
         )
     with _r7_conversion_environment() as (environment, fallback_used), tempfile.TemporaryDirectory(
         prefix="pdf-bars-r7-docx-"
@@ -253,10 +255,10 @@ def _convert_with_r7(
             font_replacements = {}
             if progress:
                 replacements = ", ".join(f"{source} -> {target}" for source, target in font_replacements.items())
-                detail = f"; совместимые шрифты: {replacements}" if replacements else ""
+                detail = tr(f"; совместимые шрифты: {replacements}") if replacements else ""
                 if fallback_used and not detail:
-                    detail = "; включена системная подстановка шрифтов"
-                progress(index - 1, total, f"Преобразование: {document.name}{detail}")
+                    detail = tr("; включена системная подстановка шрифтов")
+                progress(index - 1, total, tr(f"Преобразование: {document.name}{detail}"))
             output = available_output_path(out_dir / f"{document.stem}{target_suffix}")
             command = [converter, str(conversion_input), str(output)]
             if target_suffix == ".pdf" and r7_font_cache is not None:
@@ -271,10 +273,10 @@ def _convert_with_r7(
             )
             if completed.returncode != 0 or not output.exists():
                 details = (completed.stderr or completed.stdout or "").strip()
-                raise RuntimeError(f"R7-Office не смог преобразовать {document.name}. {details}")
+                raise RuntimeError(tr(f"R7-Office не смог преобразовать {document.name}. {details}"))
             outputs.append(output)
             if progress:
-                progress(index, total, f"Готово: {document.name}")
+                progress(index, total, tr(f"Готово: {document.name}"))
     return outputs
 
 
@@ -334,7 +336,7 @@ def normalize_docx_fonts_for_r7(
     source_path = Path(source)
     destination_path = Path(destination)
     if source_path.suffix.lower() != ".docx":
-        raise ValueError("Подстановка шрифтов поддерживается только для DOCX")
+        raise ValueError(tr("Подстановка шрифтов поддерживается только для DOCX"))
 
     replacements: dict[str, str] = {}
     for family, candidates in R7_FONT_FALLBACKS.items():
@@ -371,7 +373,7 @@ def normalize_docx_fonts_for_r7(
                 output.writestr(info, data)
     except (OSError, UnicodeError, zipfile.BadZipFile) as exc:
         destination_path.unlink(missing_ok=True)
-        raise RuntimeError(f"Не удалось подготовить совместимые шрифты для {source_path.name}") from exc
+        raise RuntimeError(tr(f"Не удалось подготовить совместимые шрифты для {source_path.name}")) from exc
     return replacements
 
 
@@ -383,7 +385,7 @@ def _convert_with_microsoft_word(
 ) -> List[Path]:
     """Convert documents through the locally installed Microsoft Word COM server."""
     if target_suffix not in {".pdf", ".docx"}:
-        raise ValueError(f"Неподдерживаемый формат Microsoft Word: {target_suffix}")
+        raise ValueError(tr(f"Неподдерживаемый формат Microsoft Word: {target_suffix}"))
 
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -447,10 +449,10 @@ try {
             )
             if completed.returncode != 0 or not output.exists():
                 details = (completed.stderr or completed.stdout or "").strip()
-                raise RuntimeError(f"Microsoft Word не смог преобразовать {document.name}. {details}")
+                raise RuntimeError(tr(f"Microsoft Word не смог преобразовать {document.name}. {details}"))
             outputs.append(output)
             if progress:
-                progress(index, total, f"Готово: {document.name}")
+                progress(index, total, tr(f"Готово: {document.name}"))
     return outputs
 
 
@@ -560,10 +562,10 @@ def _convert_with_libreoffice_legacy(
         completed = subprocess.run(command, text=True, capture_output=True, env=env)
     if completed.returncode != 0:
         details = (completed.stderr or completed.stdout or "").strip()
-        raise RuntimeError(f"Резервный конвертер не смог преобразовать DOCX. {details}")
+        raise RuntimeError(tr(f"Резервный конвертер не смог преобразовать DOCX. {details}"))
     missing = [path for path in expected_outputs if not path.exists()]
     if missing:
-        raise RuntimeError(f"Конвертер завершился, но не создал: {', '.join(map(str, missing))}")
+        raise RuntimeError(tr(f"Конвертер завершился, но не создал: {', '.join(map(str, missing))}"))
     return expected_outputs
 
 
@@ -579,7 +581,7 @@ def _convert_with_libreoffice(
     total = len(documents)
     for index, document in enumerate(documents, start=1):
         if progress:
-            progress(index - 1, total, f"Преобразование: {document.name}")
+            progress(index - 1, total, tr(f"Преобразование: {document.name}"))
         output = available_output_path(out_dir / f"{document.stem}.pdf")
         env = os.environ.copy()
         env["QT_QPA_PLATFORM"] = "offscreen"
@@ -603,11 +605,11 @@ def _convert_with_libreoffice(
             generated = work_path / f"{document.stem}.pdf"
             if completed.returncode != 0 or not generated.exists():
                 details = (completed.stderr or completed.stdout or "").strip()
-                raise RuntimeError(f"Резервный конвертер не смог преобразовать {document.name}. {details}")
+                raise RuntimeError(tr(f"Резервный конвертер не смог преобразовать {document.name}. {details}"))
             shutil.move(str(generated), str(output))
         outputs.append(output)
         if progress:
-            progress(index, total, f"Готово: {document.name}")
+            progress(index, total, tr(f"Готово: {document.name}"))
     return outputs
 
 

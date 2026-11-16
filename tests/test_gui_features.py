@@ -1,3 +1,4 @@
+from source_text import source_text
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -222,7 +223,7 @@ def test_visual_editor_reprompts_when_pdf_output_is_the_open_source(tmp_path, mo
 
 
 def test_visual_editor_exposes_distraction_free_reading_mode():
-    source = (ROOT / "src" / "redos_pdf_combiner" / "gui.py").read_text(encoding="utf-8")
+    source = source_text(ROOT / "src" / "redos_pdf_combiner" / "gui.py")
 
     assert 'text="Чтение"' in source
     assert 'reader_exit_button = ttk.Button' in source
@@ -248,7 +249,7 @@ def test_visual_editor_exposes_distraction_free_reading_mode():
 
 
 def test_visual_editor_toolbar_uses_icons_and_style_detection_is_context_only():
-    source = (ROOT / "src" / "redos_pdf_combiner" / "gui.py").read_text(encoding="utf-8")
+    source = source_text(ROOT / "src" / "redos_pdf_combiner" / "gui.py")
     editor_tab_source = source.split("def _editor_tab", 1)[1].split("def _images_tab", 1)[0]
 
     assert "create_editor_tool_icon" in editor_tab_source

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .i18n import tr
+
 import os
 import uuid
 from pathlib import Path
@@ -22,9 +24,9 @@ def create_blank_pdf(
     orientation: str = "portrait",
 ) -> Path:
     if page_size not in PAGE_SIZES:
-        raise ValueError(f"Неизвестный размер страницы: {page_size}")
+        raise ValueError(tr(f"Неизвестный размер страницы: {page_size}"))
     if orientation not in {"portrait", "landscape"}:
-        raise ValueError(f"Неизвестная ориентация: {orientation}")
+        raise ValueError(tr(f"Неизвестная ориентация: {orientation}"))
     width, height = PAGE_SIZES[page_size]
     if orientation == "landscape":
         width, height = height, width

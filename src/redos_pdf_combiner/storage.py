@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .i18n import tr
+
 import hashlib
 import os
 import posixpath
@@ -105,7 +107,7 @@ def snapshot_workspace_source(source: Path) -> Path | None:
     try:
         shutil.copyfile(source, temporary)
         if temporary.stat().st_size != stat.st_size:
-            raise OSError("Размер резервной копии не совпадает с исходным файлом")
+            raise OSError(tr("Размер резервной копии не совпадает с исходным файлом"))
         temporary.replace(destination)
         return destination
     except OSError:

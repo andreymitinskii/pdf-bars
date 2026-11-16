@@ -1,3 +1,4 @@
+from source_text import source_text
 import errno
 import json
 import subprocess
@@ -98,7 +99,7 @@ def test_unchanged_compression_has_explicit_warning(tmp_path):
 
 
 def test_compression_view_has_only_two_presets():
-    text = Path(gui.__file__).read_text(encoding='utf-8')
+    text = source_text(Path(gui.__file__))
     section = text.split('    def _compress_tab(', 1)[1].split('    def _update_compress_mode_controls', 1)[0]
     assert '("medium", "Оптимальное")' in section
     assert '("maximum", "Максимальное")' in section
@@ -116,11 +117,10 @@ def test_illustrated_guide_has_complete_pages_and_local_images():
 
 
 def test_update_notes_and_diagnostics_use_current_user_labels():
-    source = Path(gui.__file__).read_text(encoding='utf-8')
+    source = source_text(Path(gui.__file__))
     about = source.split('    def _about_tab(',1)[1].split('    def _enable_drop',1)[0]
-    notes = source.split('    def _show_whats_new(',1)[1].split('def main(',1)[0]
     assert 'Собрать отладочную информацию' in about
     assert 'Собрать статистику' not in about
-    assert 'Руководство пользователя' in notes
-    assert 'Общие улучшения программы' in notes
-    assert 'Раздел «PDF» объединён' not in notes
+    assert '_show_whats_new' not in source
+    assert 'Язык интерфейса' in about
+    assert 'andreymitinskii@gmail.com' in about

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .i18n import tr
+
 import errno
 import re
 from pathlib import Path
@@ -16,10 +18,10 @@ class UserNotice(Exception):
 def input_path(value) -> Path:
     path = Path(value).expanduser()
     if not path.is_file():
-        raise UserNotice("Файл недоступен", f"Не удалось найти исходный файл:\n{path}\n\n"
+        raise UserNotice(tr("Файл недоступен"), tr(f"Не удалось найти исходный файл:\n{path}\n\n"
                          "Файл мог быть перемещён, удалён или находиться на отключённом сетевом диске. "
                          "Проверьте доступность папки и добавьте файл заново. "
-                         "Если файл передан из другой программы, сохраните его в постоянную папку и откройте эту копию.")
+                         "Если файл передан из другой программы, сохраните его в постоянную папку и откройте эту копию."))
     return path
 
 
@@ -27,7 +29,7 @@ def user_notice(error: BaseException, source_paths=()) -> UserNotice | None:
     if isinstance(error, UserNotice):
         return error
     if is_permission_denied(error):
-        return UserNotice("Нет доступа к папке", WRITE_ACCESS_MESSAGE)
+        return UserNotice(tr("Нет доступа к папке"), WRITE_ACCESS_MESSAGE)
     if isinstance(error, FileNotFoundError):
         for value in source_paths:
             path = Path(value).expanduser()
@@ -59,8 +61,8 @@ def is_permission_denied(error: BaseException) -> bool:
 
 
 WRITE_ACCESS_MESSAGE = (
-    "Запись в выбранную папку невозможна.\n\n"
+    tr("Запись в выбранную папку невозможна.\n\n"
     "Если это сетевая папка, у вашей учётной записи может не быть прав на запись. "
     "Выберите другую папку, например «Документы», и сохраните файл повторно. "
-    "Для записи в сетевую папку обратитесь к администратору."
+    "Для записи в сетевую папку обратитесь к администратору.")
 )

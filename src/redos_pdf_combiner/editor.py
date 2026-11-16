@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .i18n import tr
+
 import math
 import os
 import re
@@ -619,9 +621,9 @@ def apply_pdf_edits(
     source = input_path(input_pdf)
     output = Path(output_pdf)
     if _same_document_path(source, output):
-        raise ValueError("Сохраните изменённый документ под новым именем")
+        raise ValueError(tr("Сохраните изменённый документ под новым именем"))
     if region_edits and pdf_has_signatures(source):
-        raise RuntimeError("Копирование областей отключено для PDF с криптографической подписью")
+        raise RuntimeError(tr("Копирование областей отключено для PDF с криптографической подписью"))
     output.parent.mkdir(parents=True, exist_ok=True)
 
     with _aligned_pdf_source(source, alignment_edits) as aligned_source, open_pdf_input(aligned_source) as document:
@@ -775,8 +777,8 @@ def apply_pdf_edits(
                 page.set_cropbox(box + (offset.x, offset.y, offset.x, offset.y))
 
         metadata = document.metadata or {}
-        metadata["producer"] = f"pdf bars {__version__} — документ отредактирован"
-        metadata["keywords"] = "корректировка; копирование области; визуальная подпись не является электронной подписью"
+        metadata["producer"] = tr(f"pdf bars {__version__} — документ отредактирован")
+        metadata["keywords"] = tr("корректировка; копирование области; визуальная подпись не является электронной подписью")
         document.set_metadata(metadata)
         remove_pdfa_declaration(document)
 
@@ -1058,7 +1060,7 @@ def _save_raster(image, output: Path, dpi: int) -> None:
         page.close()
         return
     if suffix not in IMAGE_OUTPUT_FORMATS:
-        raise ValueError("Поддерживаются форматы: PDF, PNG, JPG, WEBP, TIFF, BMP")
+        raise ValueError(tr("Поддерживаются форматы: PDF, PNG, JPG, WEBP, TIFF, BMP"))
     if suffix in {".jpg", ".jpeg", ".bmp"}:
         page = _flatten_for_jpeg(image)
         kwargs = {"quality": 95, "optimize": True} if suffix in {".jpg", ".jpeg"} else {}
@@ -1385,10 +1387,10 @@ def import_signature(
 
     clean_name = re.sub(r"[^0-9A-Za-zА-Яа-яЁё._ -]+", "_", name).strip(" ._")
     if not clean_name:
-        raise ValueError("Укажите название подписи")
+        raise ValueError(tr("Укажите название подписи"))
     destination = signature_directory() / f"{clean_name}.png"
     if destination.exists():
-        raise FileExistsError(f"Подпись «{clean_name}» уже существует")
+        raise FileExistsError(tr(f"Подпись «{clean_name}» уже существует"))
 
     with Image.open(source) as image:
         result = image.convert("RGBA")
@@ -1399,7 +1401,7 @@ def import_signature(
             result = _make_white_transparent(result)
         bbox = result.getchannel("A").getbbox()
         if not bbox:
-            raise ValueError("Не удалось выделить штрихи подписи. Выберите более чёткое изображение или включите усиление.")
+            raise ValueError(tr("Не удалось выделить штрихи подписи. Выберите более чёткое изображение или включите усиление."))
         result = result.crop(bbox)
         result.save(destination, "PNG", optimize=True)
     return destination
@@ -1436,7 +1438,7 @@ def prepare_signature_for_placement(source, destination):
 def delete_signature(path: os.PathLike[str] | str) -> None:
     signature = Path(path)
     if signature.parent.resolve() != signature_directory().resolve():
-        raise ValueError("Можно удалять только подписи из библиотеки pdf bars")
+        raise ValueError(tr("Можно удалять только подписи из библиотеки pdf bars"))
     signature.unlink(missing_ok=True)
 
 

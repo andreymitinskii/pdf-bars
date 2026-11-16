@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .i18n import tr
+
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, List, Sequence
@@ -32,14 +34,14 @@ def pdfs_to_ocr_docx(
     language: str = "rus+eng",
 ) -> List[Path]:
     if not documents:
-        raise ValueError("Нужно выбрать хотя бы один PDF")
+        raise ValueError(tr("Нужно выбрать хотя бы один PDF"))
     destination = Path(output_dir)
     destination.mkdir(parents=True, exist_ok=True)
     outputs: List[Path] = []
     for document in documents:
         source = Path(document)
         if source.suffix.lower() != ".pdf":
-            raise ValueError(f"Неподдерживаемый формат документа: {source}")
+            raise ValueError(tr(f"Неподдерживаемый формат документа: {source}"))
         if not source.is_file():
             raise FileNotFoundError(str(source))
         output = destination / f"{source.stem}_ocr.docx"
@@ -60,7 +62,7 @@ def source_to_ocr_docx(
         raise FileNotFoundError(str(source_path))
     output_path = Path(output)
     if output_path.suffix.lower() != ".docx":
-        raise ValueError("Выходной файл должен иметь расширение .docx")
+        raise ValueError(tr("Выходной файл должен иметь расширение .docx"))
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     pages = (
@@ -69,7 +71,7 @@ def source_to_ocr_docx(
         else build_text_index(source_path, force_ocr=False, dpi=dpi, language=language, enhance=True)
     )
     if not pages:
-        raise ValueError("Документ не содержит страниц")
+        raise ValueError(tr("Документ не содержит страниц"))
     _write_docx(output_path, pages, source_path.stem)
     return output_path
 

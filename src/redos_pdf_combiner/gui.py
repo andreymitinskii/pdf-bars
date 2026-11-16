@@ -20,6 +20,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageOps, ImageTk
 from pypdf import PdfReader, PdfWriter
 
 from . import __version__
+from .i18n import tr, get_language
 from .pdf_standards import declared_pdfa
 from .blank_pages import create_blank_pdf
 from .clipboard import decode_clipboard_payload, encode_clipboard_payload, new_clipboard_image_path
@@ -95,7 +96,6 @@ except Exception:  # pragma: no cover - depends on native TkDnD availability
 
 
 APP_TITLE = "pdf bars"
-WHATS_NEW_RELEASE = "1.7"
 BLUE = "#0868D7"
 DEEP_BLUE = "#0754B8"
 HEADER_BLUE = "#E4EEFD"
@@ -113,7 +113,7 @@ FONT_FAMILY = "Arial"
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff", ".webp"}
 EDITOR_SAVE_TYPE_SUFFIXES = {
     "pdf": ".pdf",
-    "word docx с распознанным текстом": ".docx",
+    tr("word docx с распознанным текстом"): ".docx",
     "docx": ".docx",
     "png": ".png",
     "jpeg": ".jpg",
@@ -125,19 +125,19 @@ EDITOR_SAVE_TYPE_SUFFIXES = {
 APP_ICON_PATH = Path(__file__).with_name("assets") / "pdf-bars-transparent.png"
 DROP_ZONE_ICON_PATH = Path(__file__).with_name("assets") / "pdf-drop-zone.png"
 if getattr(sys, "frozen", False):
-    GUIDE_PATH = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent)) / "docs" / "PDF_Bars_User_Guide.pdf"
+    GUIDE_PATH = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent)) / "docs" / ("PDF_Bars_User_Guide_en.pdf" if get_language() == "en" else "PDF_Bars_User_Guide.pdf")
 else:
-    GUIDE_PATH = Path(__file__).resolve().parents[2] / "docs" / "PDF_Bars_User_Guide.pdf"
+    GUIDE_PATH = Path(__file__).resolve().parents[2] / "docs" / ("PDF_Bars_User_Guide_en.pdf" if get_language() == "en" else "PDF_Bars_User_Guide.pdf")
 LANCZOS = getattr(getattr(Image, "Resampling", Image), "LANCZOS")
 EDITOR_BASIC_COLORS = (
-    ("#000000", "Чёрный"),
-    ("#FFFFFF", "Белый"),
-    ("#E53935", "Красный"),
-    ("#F6C344", "Жёлтый"),
-    ("#2E7D32", "Зелёный"),
-    ("#087FD4", "Синий"),
-    ("#7E57C2", "Фиолетовый"),
-    ("#808080", "Серый"),
+    ("#000000", tr("Чёрный")),
+    ("#FFFFFF", tr("Белый")),
+    ("#E53935", tr("Красный")),
+    ("#F6C344", tr("Жёлтый")),
+    ("#2E7D32", tr("Зелёный")),
+    ("#087FD4", tr("Синий")),
+    ("#7E57C2", tr("Фиолетовый")),
+    ("#808080", tr("Серый")),
 )
 
 
@@ -166,11 +166,11 @@ def missing_workspace_sources_message(sources: list[Path]) -> str:
     visible = unique[:8]
     details = "\n".join(f"• {path}" for path in visible)
     if len(unique) > len(visible):
-        details += f"\n• … и ещё {len(unique) - len(visible)}"
+        details += tr(f"\n• … и ещё {len(unique) - len(visible)}")
     return (
-        "Не удалось сохранить документ: исходные файлы больше недоступны.\n\n"
+        tr("Не удалось сохранить документ: исходные файлы больше недоступны.\n\n"
         f"{details}\n\n"
-        "Проверьте подключение сетевой папки или добавьте указанные файлы заново."
+        "Проверьте подключение сетевой папки или добавьте указанные файлы заново.")
     )
 
 
@@ -708,27 +708,27 @@ class TabWorkspace(RoundedPanel):
 
 class BlankPageDialog(simpledialog.Dialog):
     def body(self, master):
-        self.title("Пустая страница")
+        self.title(tr("Пустая страница"))
         self.resizable(False, False)
         self.page_size = tk.StringVar(value="A4")
         self.orientation = tk.StringVar(value="portrait")
-        ttk.Label(master, text="Размер").grid(row=0, column=0, sticky="w", padx=6, pady=6)
+        ttk.Label(master, text=tr("Размер")).grid(row=0, column=0, sticky="w", padx=6, pady=6)
         ttk.Combobox(master, textvariable=self.page_size, values=("A5", "A4", "A3"), state="readonly", width=12).grid(
             row=0, column=1, sticky="ew", padx=6, pady=6
         )
-        ttk.Label(master, text="Ориентация").grid(row=1, column=0, sticky="w", padx=6, pady=6)
+        ttk.Label(master, text=tr("Ориентация")).grid(row=1, column=0, sticky="w", padx=6, pady=6)
         orientation = ttk.Frame(master)
         orientation.grid(row=1, column=1, sticky="w", padx=6, pady=6)
-        ttk.Radiobutton(orientation, text="Книжная", variable=self.orientation, value="portrait").pack(side="left")
-        ttk.Radiobutton(orientation, text="Альбомная", variable=self.orientation, value="landscape").pack(
+        ttk.Radiobutton(orientation, text=tr("Книжная"), variable=self.orientation, value="portrait").pack(side="left")
+        ttk.Radiobutton(orientation, text=tr("Альбомная"), variable=self.orientation, value="landscape").pack(
             side="left", padx=(10, 0)
         )
         return master
 
     def buttonbox(self) -> None:
         box = ttk.Frame(self)
-        ttk.Button(box, text="Создать", command=self.ok, style="Accent.TButton").pack(side="left", padx=5)
-        ttk.Button(box, text="Отмена", command=self.cancel).pack(side="left", padx=5)
+        ttk.Button(box, text=tr("Создать"), command=self.ok, style="Accent.TButton").pack(side="left", padx=5)
+        ttk.Button(box, text=tr("Отмена"), command=self.cancel).pack(side="left", padx=5)
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.cancel)
         box.pack(pady=(4, 10))
@@ -758,24 +758,24 @@ class WordReplacementDialog(simpledialog.Dialog):
         self.scan_effect = tk.BooleanVar(value=scan_effect)
         self.underline = tk.BooleanVar(value=underline)
         self.result = None
-        super().__init__(parent, "Заменить слово")
+        super().__init__(parent, tr("Заменить слово"))
 
     def body(self, master):
         self.resizable(False, False)
-        ttk.Label(master, text=f"Исходное слово: {self.original_text}").grid(
+        ttk.Label(master, text=tr(f"Исходное слово: {self.original_text}")).grid(
             row=0, column=0, columnspan=3, sticky="w", padx=6, pady=(6, 3)
         )
-        ttk.Label(master, text="Новое слово").grid(row=1, column=0, sticky="w", padx=6, pady=5)
+        ttk.Label(master, text=tr("Новое слово")).grid(row=1, column=0, sticky="w", padx=6, pady=5)
         entry = ttk.Entry(master, textvariable=self.replacement_text, width=32)
         entry.grid(row=1, column=1, columnspan=2, sticky="ew", padx=6, pady=5)
         ttk.Label(
             master,
-            text=f"Подобрано: {self.detected_font_family}, {self.detected_font_size:.1f} пт; цвет: чёрный",
+            text=tr(f"Подобрано: {self.detected_font_family}, {self.detected_font_size:.1f} пт; цвет: чёрный"),
         ).grid(row=2, column=0, columnspan=3, sticky="w", padx=6, pady=(3, 6))
-        ttk.Checkbutton(master, text="Жирный", variable=self.bold).grid(row=3, column=1, sticky="w", padx=6, pady=5)
-        ttk.Checkbutton(master, text="Курсив", variable=self.italic).grid(row=3, column=2, sticky="w", padx=6, pady=5)
-        ttk.Checkbutton(master, text="Подчёркнутый", variable=self.underline).grid(row=3, column=0, sticky="w", padx=6, pady=5)
-        ttk.Checkbutton(master, text="Эффект скана", variable=self.scan_effect).grid(
+        ttk.Checkbutton(master, text=tr("Жирный"), variable=self.bold).grid(row=3, column=1, sticky="w", padx=6, pady=5)
+        ttk.Checkbutton(master, text=tr("Курсив"), variable=self.italic).grid(row=3, column=2, sticky="w", padx=6, pady=5)
+        ttk.Checkbutton(master, text=tr("Подчёркнутый"), variable=self.underline).grid(row=3, column=0, sticky="w", padx=6, pady=5)
+        ttk.Checkbutton(master, text=tr("Эффект скана"), variable=self.scan_effect).grid(
             row=4, column=1, columnspan=2, sticky="w", padx=6, pady=(1, 5)
         )
         master.columnconfigure(1, weight=1)
@@ -798,13 +798,13 @@ class PrintDialog(simpledialog.Dialog):
         self.page_range = tk.StringVar()
         self.duplex = tk.BooleanVar(value=False)
         self.grayscale = tk.BooleanVar(value=False)
-        super().__init__(parent, title="Печать")
+        super().__init__(parent, title=tr("Печать"))
 
     def body(self, master):
         default = next((printer.name for printer in self.printers if printer.is_default), "")
-        values = ["Системный принтер по умолчанию"] + [printer.name for printer in self.printers]
+        values = [tr("Системный принтер по умолчанию")] + [printer.name for printer in self.printers]
         self.printer_display.set(default or values[0])
-        ttk.Label(master, text="Принтер").grid(row=0, column=0, sticky="w", padx=7, pady=6)
+        ttk.Label(master, text=tr("Принтер")).grid(row=0, column=0, sticky="w", padx=7, pady=6)
         ttk.Combobox(
             master,
             textvariable=self.printer_display,
@@ -812,22 +812,22 @@ class PrintDialog(simpledialog.Dialog):
             state="readonly",
             width=38,
         ).grid(row=0, column=1, sticky="ew", padx=7, pady=6)
-        ttk.Label(master, text="Копии").grid(row=1, column=0, sticky="w", padx=7, pady=6)
+        ttk.Label(master, text=tr("Копии")).grid(row=1, column=0, sticky="w", padx=7, pady=6)
         tk.Spinbox(master, from_=1, to=999, textvariable=self.copies, width=8).grid(
             row=1, column=1, sticky="w", padx=7, pady=6
         )
-        ttk.Label(master, text="Страницы").grid(row=2, column=0, sticky="w", padx=7, pady=6)
+        ttk.Label(master, text=tr("Страницы")).grid(row=2, column=0, sticky="w", padx=7, pady=6)
         page_entry = ttk.Entry(master, textvariable=self.page_range, width=24)
         page_entry.grid(row=2, column=1, sticky="ew", padx=7, pady=6)
         ttk.Label(
             master,
-            text=f"Пустое поле — все {self.page_count}; пример: 1-3,5",
+            text=tr(f"Пустое поле — все {self.page_count}; пример: 1-3,5"),
             foreground=MUTED,
         ).grid(row=3, column=1, sticky="w", padx=7, pady=(0, 6))
-        ttk.Checkbutton(master, text="Двусторонняя печать", variable=self.duplex).grid(
+        ttk.Checkbutton(master, text=tr("Двусторонняя печать"), variable=self.duplex).grid(
             row=4, column=1, sticky="w", padx=7, pady=4
         )
-        ttk.Checkbutton(master, text="Оттенки серого", variable=self.grayscale).grid(
+        ttk.Checkbutton(master, text=tr("Оттенки серого"), variable=self.grayscale).grid(
             row=5, column=1, sticky="w", padx=7, pady=4
         )
         master.columnconfigure(1, weight=1)
@@ -837,36 +837,36 @@ class PrintDialog(simpledialog.Dialog):
         try:
             copies = int(self.copies.get())
         except (tk.TclError, ValueError):
-            messagebox.showerror("Печать", "Введите количество копий от 1 до 999", parent=self)
+            messagebox.showerror(tr("Печать"), tr("Введите количество копий от 1 до 999"), parent=self)
             return False
         if not 1 <= copies <= 999:
-            messagebox.showerror("Печать", "Введите количество копий от 1 до 999", parent=self)
+            messagebox.showerror(tr("Печать"), tr("Введите количество копий от 1 до 999"), parent=self)
             return False
         value = self.page_range.get().replace(" ", "")
         if value:
             import re
 
             if not re.fullmatch(r"\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*", value):
-                messagebox.showerror("Печать", "Диапазон задаётся, например, так: 1-3,5,8", parent=self)
+                messagebox.showerror(tr("Печать"), tr("Диапазон задаётся, например, так: 1-3,5,8"), parent=self)
                 return False
             for item in value.split(","):
                 bounds = [int(part) for part in item.split("-")]
                 if min(bounds) < 1 or max(bounds) > self.page_count or len(bounds) == 2 and bounds[0] > bounds[1]:
-                    messagebox.showerror("Печать", f"Допустимы страницы от 1 до {self.page_count}", parent=self)
+                    messagebox.showerror(tr("Печать"), tr(f"Допустимы страницы от 1 до {self.page_count}"), parent=self)
                     return False
         return True
 
     def buttonbox(self) -> None:
         box = ttk.Frame(self)
-        ttk.Button(box, text="Печатать", command=self.ok, style="Accent.TButton").pack(side="left", padx=5)
-        ttk.Button(box, text="Отмена", command=self.cancel).pack(side="left", padx=5)
+        ttk.Button(box, text=tr("Печатать"), command=self.ok, style="Accent.TButton").pack(side="left", padx=5)
+        ttk.Button(box, text=tr("Отмена"), command=self.cancel).pack(side="left", padx=5)
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.cancel)
         box.pack(pady=(5, 11))
 
     def apply(self) -> None:
         selected = self.printer_display.get()
-        printer = "" if selected == "Системный принтер по умолчанию" else selected
+        printer = "" if selected == tr("Системный принтер по умолчанию") else selected
         self.result = PrintOptions(
             printer=printer,
             copies=int(self.copies.get()),
@@ -882,14 +882,14 @@ class PageAlignmentDialog(simpledialog.Dialog):
         self.detected_angle = float(detected_angle)
         self.preview = preview
         self.angle = tk.DoubleVar(master=parent, value=self.current_angle)
-        super().__init__(parent, title="Выравнивание страницы")
+        super().__init__(parent, title=tr("Выравнивание страницы"))
 
     def body(self, master):
         ttk.Label(
             master,
-            text=f"Автоматически определённая поправка: {self.detected_angle:+.2f}°",
+            text=tr(f"Автоматически определённая поправка: {self.detected_angle:+.2f}°"),
         ).grid(row=0, column=0, columnspan=3, sticky="w", padx=8, pady=(8, 5))
-        ttk.Label(master, text="Угол").grid(row=1, column=0, sticky="w", padx=8, pady=6)
+        ttk.Label(master, text=tr("Угол")).grid(row=1, column=0, sticky="w", padx=8, pady=6)
         scale = tk.Scale(
             master,
             variable=self.angle,
@@ -907,11 +907,11 @@ class PageAlignmentDialog(simpledialog.Dialog):
         spin.bind("<KeyRelease>", self._preview_angle)
         actions = ttk.Frame(master)
         actions.grid(row=2, column=1, sticky="w", padx=5, pady=(0, 8))
-        ttk.Button(actions, text="Авто", command=lambda: self._set_angle(self.detected_angle)).pack(side="left")
-        ttk.Button(actions, text="Сбросить", command=lambda: self._set_angle(0.0)).pack(side="left", padx=(5, 0))
+        ttk.Button(actions, text=tr("Авто"), command=lambda: self._set_angle(self.detected_angle)).pack(side="left")
+        ttk.Button(actions, text=tr("Сбросить"), command=lambda: self._set_angle(0.0)).pack(side="left", padx=(5, 0))
         ttk.Label(
             master,
-            text="Положительный угол поворачивает страницу против часовой стрелки.",
+            text=tr("Положительный угол поворачивает страницу против часовой стрелки."),
             foreground=MUTED,
         ).grid(row=3, column=0, columnspan=3, sticky="w", padx=8, pady=(0, 8))
         master.columnconfigure(1, weight=1)
@@ -932,10 +932,10 @@ class PageAlignmentDialog(simpledialog.Dialog):
         try:
             value = float(self.angle.get())
         except (tk.TclError, ValueError):
-            messagebox.showerror("Выравнивание", "Введите угол от -15 до 15 градусов", parent=self)
+            messagebox.showerror(tr("Выравнивание"), tr("Введите угол от -15 до 15 градусов"), parent=self)
             return False
         if not -15.0 <= value <= 15.0:
-            messagebox.showerror("Выравнивание", "Допустимый угол: от -15 до 15 градусов", parent=self)
+            messagebox.showerror(tr("Выравнивание"), tr("Допустимый угол: от -15 до 15 градусов"), parent=self)
             return False
         return True
 
@@ -967,6 +967,10 @@ class PdfCombinerApp(BaseTk):
         self._window_rounding_after = None
         self._x11_client_window_id = None
         self.preferences = load_preferences()
+        try:
+            self.tk.call('::msgcat::mclocale', get_language())
+        except tk.TclError:
+            pass
 
 
         self.pages: list[PageRef] = []
@@ -996,14 +1000,14 @@ class PdfCombinerApp(BaseTk):
         self.compress_preset = tk.StringVar(value=saved_compress_preset if saved_compress_preset in {"maximum", "medium"} else "medium")
         self.compress_target_mb = tk.StringVar(value="10")
         self.compress_color_mode = tk.StringVar(value="color")
-        color_labels = {"color": "Цветной", "grayscale": "Оттенки серого", "monochrome": "Чёрно-белый (минимальный размер)"}
-        self.compress_color_display = tk.StringVar(value=color_labels.get(self.compress_color_mode.get(), "Цветной"))
-        self.compress_estimate = tk.StringVar(value="Добавьте PDF")
-        self.pdf_workspace_summary = tk.StringVar(value="Рабочая область пуста")
-        self.image_files_summary = tk.StringVar(value="Файлы не добавлены")
-        self.docx_files_summary = tk.StringVar(value="Файлы не добавлены")
-        self.pdf_docx_files_summary = tk.StringVar(value="Файлы не добавлены")
-        self.compress_files_summary = tk.StringVar(value="Файлы не добавлены")
+        color_labels = {"color": tr("Цветной"), "grayscale": tr("Оттенки серого"), "monochrome": tr("Чёрно-белый (минимальный размер)")}
+        self.compress_color_display = tk.StringVar(value=color_labels.get(self.compress_color_mode.get(), tr("Цветной")))
+        self.compress_estimate = tk.StringVar(value=tr("Добавьте PDF"))
+        self.pdf_workspace_summary = tk.StringVar(value=tr("Рабочая область пуста"))
+        self.image_files_summary = tk.StringVar(value=tr("Файлы не добавлены"))
+        self.docx_files_summary = tk.StringVar(value=tr("Файлы не добавлены"))
+        self.pdf_docx_files_summary = tk.StringVar(value=tr("Файлы не добавлены"))
+        self.compress_files_summary = tk.StringVar(value=tr("Файлы не добавлены"))
         self.editor_pdf_path: Path | None = None
         self.editor_source_kind: str | None = None
         self.editor_page_index = 0
@@ -1061,7 +1065,7 @@ class PdfCombinerApp(BaseTk):
         self.editor_draw_color = tk.StringVar(value="#000000")
         self.editor_pencil_width = tk.DoubleVar(value=2.5)
         self.editor_eraser_width = tk.DoubleVar(value=14.0)
-        self.editor_page_label = tk.StringVar(value="Страница —")
+        self.editor_page_label = tk.StringVar(value=tr("Страница —"))
         self.editor_reader_page_label = tk.StringVar(value="— / —")
         self.editor_warning = tk.StringVar(value="")
         self.editor_new_document = False
@@ -1112,12 +1116,12 @@ class PdfCombinerApp(BaseTk):
             value=bool(self.preferences.get("document_ocr_detect_tables", True))
         )
         self.documents_progress_value = tk.DoubleVar(value=0.0)
-        self.documents_progress_text = tk.StringVar(value="Готово к преобразованию")
+        self.documents_progress_text = tk.StringVar(value=tr("Готово к преобразованию"))
         self._global_progress_active = False
         self._drop_zone_icon_cache: dict[int, ImageTk.PhotoImage] = {}
         self.signature_remove_background = tk.BooleanVar(value=True)
         self.signature_enhance = tk.BooleanVar(value=False)
-        self.status = tk.StringVar(value="Готово")
+        self.status = tk.StringVar(value=tr("Готово"))
 
         self._set_window_icon()
         self._configure_style()
@@ -1649,13 +1653,13 @@ class PdfCombinerApp(BaseTk):
         self.notebook = TabWorkspace(self)
         self.notebook.grid(row=1, column=0, sticky="nsew", padx=6, pady=(4, 4))
         self.editor_tab = self._editor_tab(self.notebook.content)
-        self.notebook.add(self.editor_tab, text="PDF Редактор")
-        self.notebook.add(self._images_tab(self.notebook.content), text="Изображения → PDF")
-        self.notebook.add(self._pdf_images_tab(self.notebook.content), text="PDF → изображения")
+        self.notebook.add(self.editor_tab, text=tr("PDF Редактор"))
+        self.notebook.add(self._images_tab(self.notebook.content), text=tr("Изображения → PDF"))
+        self.notebook.add(self._pdf_images_tab(self.notebook.content), text=tr("PDF → изображения"))
         self.documents_tab = self._documents_tab(self.notebook.content)
-        self.notebook.add(self.documents_tab, text="Документы")
-        self.notebook.add(self._compress_tab(self.notebook.content), text="Сжатие")
-        self.notebook.add(self._about_tab(self.notebook.content), text="О программе")
+        self.notebook.add(self.documents_tab, text=tr("Документы"))
+        self.notebook.add(self._compress_tab(self.notebook.content), text=tr("Сжатие"))
+        self.notebook.add(self._about_tab(self.notebook.content), text=tr("О программе"))
         self._decorate_workspace_actions(self.notebook.content)
 
         self.status_bar = tk.Frame(self, bg="#F8FAFD", highlightthickness=1, highlightbackground=BORDER)
@@ -1693,10 +1697,10 @@ class PdfCombinerApp(BaseTk):
         for widget in parent.winfo_children():
             if isinstance(widget, ttk.Button) and not widget.cget("image"):
                 text = str(widget.cget("text"))
-                primary = text.startswith("Преобразовать") or text in {"Создать PDF", "Сжать PDF"}
-                kind = ("document" if primary else "folder" if text.startswith(("Добавить", "Выбрать", "Папка"))
-                        else "clear" if text.startswith(("Удалить", "Очистить"))
-                        else "info" if text.startswith(("Открыть руководство", "Собрать отладочную")) else None)
+                primary = text.startswith(tr("Преобразовать")) or text in {tr("Создать PDF"), tr("Сжать PDF")}
+                kind = ("document" if primary else "folder" if text.startswith((tr("Добавить"), tr("Выбрать"), tr("Папка")))
+                        else "clear" if text.startswith((tr("Удалить"), tr("Очистить")))
+                        else "info" if text.startswith((tr("Открыть руководство"), tr("Собрать отладочную"))) else None)
                 if kind:
                     key = (kind, primary)
                     if key not in self.workspace_action_icons:
@@ -1727,7 +1731,7 @@ class PdfCombinerApp(BaseTk):
 
     def _update_global_progress(self, current: int, total: int, text: str | None = None) -> None:
         if not self._global_progress_active:
-            self._start_global_progress(text or "Выполняется…", determinate=True, maximum=total)
+            self._start_global_progress(text or tr("Выполняется…"), determinate=True, maximum=total)
         maximum = max(1, int(total))
         value = max(0, min(int(current), maximum))
         self.global_progress_bar.stop()
@@ -1759,13 +1763,13 @@ class PdfCombinerApp(BaseTk):
         self.recent_menu.delete(0, tk.END)
         recent = existing_recent_files(self.preferences)
         if not recent:
-            self.recent_menu.add_command(label="Список пока пуст", state="disabled")
+            self.recent_menu.add_command(label=tr("Список пока пуст"), state="disabled")
             return
         for path in recent:
             label = path.name if len(path.name) <= 52 else f"{path.name[:49]}…"
             self.recent_menu.add_command(label=label, command=lambda value=path: self._open_recent_file(value))
         self.recent_menu.add_separator()
-        self.recent_menu.add_command(label="Очистить список", command=self._clear_recent_files)
+        self.recent_menu.add_command(label=tr("Очистить список"), command=self._clear_recent_files)
 
     def _clear_recent_files(self) -> None:
         self.preferences["recent_files"] = []
@@ -1779,7 +1783,7 @@ class PdfCombinerApp(BaseTk):
         if not path.is_file():
             remember_recent_files(self.preferences, ())
             self._refresh_recent_menu()
-            messagebox.showinfo("Недавние документы", "Файл больше не найден")
+            messagebox.showinfo(tr("Недавние документы"), tr("Файл больше не найден"))
             return
         self._remember_dialog_selection(path)
         if path.suffix.lower() in {".docx", ".doc"}:
@@ -1809,7 +1813,7 @@ class PdfCombinerApp(BaseTk):
         }
         ttk.Button(
             toolbar,
-            text="Добавить файл",
+            text=tr("Добавить файл"),
             image=self.pdf_toolbar_icons["add"],
             compound="left",
             command=self._choose_pdf_files,
@@ -1821,7 +1825,7 @@ class PdfCombinerApp(BaseTk):
         )
         ttk.Button(
             toolbar,
-            text="Сохранить PDF",
+            text=tr("Сохранить PDF"),
             image=self.pdf_toolbar_icons["save"],
             compound="left",
             command=self._save_pdf_document,
@@ -1833,7 +1837,7 @@ class PdfCombinerApp(BaseTk):
         )
         ttk.Button(
             toolbar,
-            text="Печать",
+            text=tr("Печать"),
             image=self.pdf_toolbar_icons["print"],
             compound="left",
             command=self._print_pdf_document,
@@ -1845,7 +1849,7 @@ class PdfCombinerApp(BaseTk):
         )
         ttk.Button(
             toolbar,
-            text="Очистить",
+            text=tr("Очистить"),
             image=self.pdf_toolbar_icons["clear"],
             compound="left",
             command=self._clear_pdf_workspace,
@@ -1861,7 +1865,7 @@ class PdfCombinerApp(BaseTk):
 
         self.drop_label = tk.Label(
             frame,
-            text="Перетащите PDF или изображения · Shift — диапазон · ПКМ по миниатюре — дополнительные действия",
+            text=tr("Перетащите PDF или изображения · Shift — диапазон · ПКМ по миниатюре — дополнительные действия"),
             bg=PANEL,
             fg=MUTED,
             padx=14,
@@ -1917,18 +1921,18 @@ class PdfCombinerApp(BaseTk):
         toolbar.columnconfigure(7, weight=1)
         self.editor_command_icons = {kind: create_action_icon(kind, "#FFFFFF" if kind == "folder" else "#173F7A", 20)
                                      for kind in ("folder", "save", "grid", "print", "undo", "redo")}
-        ttk.Button(toolbar, text="Открыть", image=self.editor_command_icons["folder"], compound="left",
+        ttk.Button(toolbar, text=tr("Открыть"), image=self.editor_command_icons["folder"], compound="left",
                    command=self._choose_editor_file, style="Primary.TButton").grid(row=0, column=0, padx=(0, 3))
-        ttk.Button(toolbar, text="Сохранить как…", image=self.editor_command_icons["save"], compound="left",
+        ttk.Button(toolbar, text=tr("Сохранить как…"), image=self.editor_command_icons["save"], compound="left",
                    command=self._save_editor_pdf, style="Accent.TButton").grid(row=0, column=1, padx=3)
-        self.editor_view_button = ttk.Button(toolbar, text="Все страницы", image=self.editor_command_icons["grid"],
+        self.editor_view_button = ttk.Button(toolbar, text=tr("Все страницы"), image=self.editor_command_icons["grid"],
                                             compound="left", command=self._toggle_editor_grid, style="Accent.TButton")
         self.editor_view_button.grid(row=0, column=2, padx=3)
-        self._tip(self.editor_view_button, "Сетка миниатюр: объединение PDF, перестановка, сохранение и удаление страниц")
+        self._tip(self.editor_view_button, tr("Сетка миниатюр: объединение PDF, перестановка, сохранение и удаление страниц"))
         self.editor_print_icon = self.editor_command_icons["print"]
         ttk.Button(
             toolbar,
-            text="Печать",
+            text=tr("Печать"),
             image=self.editor_print_icon,
             compound="left",
             command=self._print_editor_document,
@@ -1939,22 +1943,22 @@ class PdfCombinerApp(BaseTk):
         undo_button.grid(row=0, column=5, padx=1)
         redo_button = ttk.Button(toolbar, image=self.editor_command_icons["redo"], width=3, command=self._redo_editor_action)
         redo_button.grid(row=0, column=6, padx=1)
-        self._tip(undo_button, "Отменить действие")
-        self._tip(redo_button, "Повторить действие")
-        reading_mode_button = ttk.Button(toolbar, text="Чтение", command=self._enter_editor_reading_mode)
+        self._tip(undo_button, tr("Отменить действие"))
+        self._tip(redo_button, tr("Повторить действие"))
+        reading_mode_button = ttk.Button(toolbar, text=tr("Чтение"), command=self._enter_editor_reading_mode)
         reading_mode_button.grid(
             row=0,
             column=8,
             sticky="e",
             padx=(4, 3),
         )
-        self._tip(reading_mode_button, "Открыть документ без инструментов редактирования")
+        self._tip(reading_mode_button, tr("Открыть документ без инструментов редактирования"))
         document_commands = tk.Frame(toolbar, bg=PANEL)
         document_commands.grid(row=0, column=7, sticky="w", padx=8)
-        self.editor_close_button = ttk.Button(document_commands, text="Закрыть документ", command=self._clear_editor_document)
+        self.editor_close_button = ttk.Button(document_commands, text=tr("Закрыть документ"), command=self._clear_editor_document)
         self.editor_close_button.pack(side="left", padx=3)
         self.editor_edits_visible = tk.BooleanVar(value=False)
-        ttk.Checkbutton(document_commands, text="Правки", variable=self.editor_edits_visible,
+        ttk.Checkbutton(document_commands, text=tr("Правки"), variable=self.editor_edits_visible,
                         command=self._sync_editor_edits_visibility).pack(side="left", padx=8)
         self.editor_document_commands = document_commands
         def fit_commands(event):
@@ -1980,8 +1984,8 @@ class PdfCombinerApp(BaseTk):
         ttk.Button(navigation, text="−", width=3, command=lambda: self._change_editor_zoom(-10)).grid(row=0, column=12, padx=1)
         tk.Label(navigation, textvariable=self.editor_zoom_label, bg=PANEL, fg=TEXT, width=6).grid(row=0, column=13)
         ttk.Button(navigation, text="+", width=3, command=lambda: self._change_editor_zoom(10)).grid(row=0, column=14, padx=1)
-        ttk.Button(navigation, text="По ширине", command=self._fit_editor_width).grid(row=0, column=15, padx=(2, 1))
-        ttk.Button(navigation, text="Страница", command=self._fit_editor_page).grid(row=0, column=16, padx=1)
+        ttk.Button(navigation, text=tr("По ширине"), command=self._fit_editor_width).grid(row=0, column=15, padx=(2, 1))
+        ttk.Button(navigation, text=tr("Страница"), command=self._fit_editor_page).grid(row=0, column=16, padx=1)
         ttk.Button(navigation, text="100%", width=5, command=lambda: self._set_editor_zoom(100.0)).grid(
             row=0, column=17, padx=(1, 0)
         )
@@ -2003,20 +2007,20 @@ class PdfCombinerApp(BaseTk):
                 navigation.pack(side="right")
                 tools.pack(side="left")
         navigation_row.bind("<Configure>", fit_navigation)
-        tk.Label(tools, text="Инструменты", bg=PANEL, fg=MUTED, font=("Arial", 9, "bold")).pack(side="left", padx=(1, 7))
+        tk.Label(tools, text=tr("Инструменты"), bg=PANEL, fg=MUTED, font=("Arial", 9, "bold")).pack(side="left", padx=(1, 7))
         tool_specs = (
-            ("select", "Выбор", "Выбрать, переместить или изменить размер объекта", self._start_object_selection),
-            ("text", "Текст", "Добавить надпись на страницу", self._start_text_placement),
-            ("replace_word", "Заменить слово", "Заменить распознанное слово с восстановлением фона", self._start_word_replacement),
-            ("erase", "Закрыть область", "Закрыть прямоугольную область выбранным цветом", self._start_erase_placement),
-            ("copy_region", "Выделить область", "Выделить фрагмент страницы для Ctrl+C", self._start_region_copy),
-            ("crop", "Обрезка", "Оставить только выбранную часть страницы", self._start_crop_selection),
-            ("align", "Выравнивание", "Автоматически определить и вручную поправить наклон", self._start_page_alignment),
-            ("pencil", "Карандаш", "Рисовать произвольные линии", self._start_pencil),
-            ("line", "Линия", "Нарисовать прямую линию", self._start_line),
-            ("arrow", "Стрелка", "Нарисовать стрелку", self._start_arrow),
-            ("free_erase", "Ластик", "Закрыть фрагмент свободным штрихом", self._start_free_eraser),
-            ("signature", "Подпись", "Открыть библиотеку подписей и отметок", self._open_signature_library),
+            ("select", tr("Выбор"), tr("Выбрать, переместить или изменить размер объекта"), self._start_object_selection),
+            ("text", tr("Текст"), tr("Добавить надпись на страницу"), self._start_text_placement),
+            ("replace_word", tr("Заменить слово"), tr("Заменить распознанное слово с восстановлением фона"), self._start_word_replacement),
+            ("erase", tr("Закрыть область"), tr("Закрыть прямоугольную область выбранным цветом"), self._start_erase_placement),
+            ("copy_region", tr("Выделить область"), tr("Выделить фрагмент страницы для Ctrl+C"), self._start_region_copy),
+            ("crop", tr("Обрезка"), tr("Оставить только выбранную часть страницы"), self._start_crop_selection),
+            ("align", tr("Выравнивание"), tr("Автоматически определить и вручную поправить наклон"), self._start_page_alignment),
+            ("pencil", tr("Карандаш"), tr("Рисовать произвольные линии"), self._start_pencil),
+            ("line", tr("Линия"), tr("Нарисовать прямую линию"), self._start_line),
+            ("arrow", tr("Стрелка"), tr("Нарисовать стрелку"), self._start_arrow),
+            ("free_erase", tr("Ластик"), tr("Закрыть фрагмент свободным штрихом"), self._start_free_eraser),
+            ("signature", tr("Подпись"), tr("Открыть библиотеку подписей и отметок"), self._open_signature_library),
         )
         self.editor_tool_icons = {
             mode: create_editor_tool_icon(mode, DEEP_BLUE, 22) for mode, _label, _tip_text, _command in tool_specs
@@ -2040,17 +2044,17 @@ class PdfCombinerApp(BaseTk):
         search_bar = tk.Frame(toolbar, bg=PANEL)
         search_bar.grid(row=2, column=0, columnspan=18, sticky="ew", pady=(7, 0))
         search_bar.columnconfigure(1, weight=1)
-        tk.Label(search_bar, text="Поиск", bg=PANEL, fg=MUTED, font=("Arial", 9, "bold")).grid(row=0, column=0, padx=(1, 7))
+        tk.Label(search_bar, text=tr("Поиск"), bg=PANEL, fg=MUTED, font=("Arial", 9, "bold")).grid(row=0, column=0, padx=(1, 7))
         self.editor_search_entry = ttk.Entry(search_bar, textvariable=self.editor_search_query)
         self.editor_search_entry.grid(row=0, column=1, sticky="ew", padx=(0, 4))
         self.editor_search_entry.bind("<Return>", lambda _event: self._start_editor_search())
-        self.editor_search_button = ttk.Button(search_bar, text="Найти", command=self._start_editor_search)
+        self.editor_search_button = ttk.Button(search_bar, text=tr("Найти"), command=self._start_editor_search)
         self.editor_search_button.grid(row=0, column=2, padx=1)
         self.editor_search_previous_button = ttk.Button(search_bar, text="‹", width=3, command=lambda: self._move_editor_search_hit(-1))
         self.editor_search_previous_button.grid(row=0, column=3, padx=(5, 1))
         self.editor_search_next_button = ttk.Button(search_bar, text="›", width=3, command=lambda: self._move_editor_search_hit(1))
         self.editor_search_next_button.grid(row=0, column=4, padx=1)
-        self.editor_ocr_button = ttk.Button(search_bar, text="Распознать текст", command=self._start_editor_ocr)
+        self.editor_ocr_button = ttk.Button(search_bar, text=tr("Распознать текст"), command=self._start_editor_ocr)
         self.editor_ocr_button.grid(row=0, column=5, padx=(7, 1))
         self.editor_ocr_language_box = ttk.Combobox(
             search_bar,
@@ -2062,7 +2066,7 @@ class PdfCombinerApp(BaseTk):
         self.editor_ocr_language_box.grid(row=0, column=6, padx=(4, 1))
         self._tip(
             self.editor_ocr_language_box,
-            "Язык OCR: rus+eng для смешанных документов, rus только для русского, eng только для английского.",
+            tr("Язык OCR: rus+eng для смешанных документов, rus только для русского, eng только для английского."),
         )
         self.editor_ocr_progress = ttk.Progressbar(search_bar, mode="determinate", length=90)
         self.editor_ocr_progress.grid(row=0, column=7, padx=(6, 1))
@@ -2079,12 +2083,12 @@ class PdfCombinerApp(BaseTk):
         self.editor_reader_toolbar_shell = reader_shell
         reader_shell.grid(row=0, column=0, sticky="ew")
         reader_shell.grid_remove()
-        tk.Label(reader_toolbar, text="Поиск", bg=PANEL, fg=MUTED).grid(row=0, column=0, padx=(0, 6))
+        tk.Label(reader_toolbar, text=tr("Поиск"), bg=PANEL, fg=MUTED).grid(row=0, column=0, padx=(0, 6))
         reader_toolbar.columnconfigure(1, weight=1, minsize=80)
         self.editor_reader_search_entry = ttk.Entry(reader_toolbar, textvariable=self.editor_search_query, width=8)
         self.editor_reader_search_entry.grid(row=0, column=1, sticky="ew", padx=(0, 3))
         self.editor_reader_search_entry.bind("<Return>", lambda _event: self._start_editor_search())
-        self.editor_reader_search_button = ttk.Button(reader_toolbar, text="Найти", width=6, command=self._start_editor_search)
+        self.editor_reader_search_button = ttk.Button(reader_toolbar, text=tr("Найти"), width=6, command=self._start_editor_search)
         self.editor_reader_search_button.grid(row=0, column=2, padx=1)
         ttk.Button(reader_toolbar, text="‹", width=3, command=lambda: self._move_editor_search_hit(-1)).grid(row=0, column=3, padx=(4, 1))
         ttk.Button(reader_toolbar, text="›", width=3, command=lambda: self._move_editor_search_hit(1)).grid(row=0, column=4, padx=1)
@@ -2113,8 +2117,8 @@ class PdfCombinerApp(BaseTk):
         ttk.Button(reader_toolbar, text="−", width=3, command=lambda: self._change_editor_zoom(-10)).grid(row=0, column=11)
         tk.Label(reader_toolbar, textvariable=self.editor_zoom_label, bg=PANEL, fg=TEXT, width=6).grid(row=0, column=12)
         ttk.Button(reader_toolbar, text="+", width=3, command=lambda: self._change_editor_zoom(10)).grid(row=0, column=13)
-        ttk.Button(reader_toolbar, text="По ширине", command=self._fit_editor_width).grid(row=0, column=14, padx=(3, 1))
-        ttk.Button(reader_toolbar, text="Страница", command=self._fit_editor_page).grid(row=0, column=15, padx=1)
+        ttk.Button(reader_toolbar, text=tr("По ширине"), command=self._fit_editor_width).grid(row=0, column=14, padx=(3, 1))
+        ttk.Button(reader_toolbar, text=tr("Страница"), command=self._fit_editor_page).grid(row=0, column=15, padx=1)
         ttk.Button(reader_toolbar, text="100%", width=5, command=lambda: self._set_editor_zoom(100.0)).grid(
             row=0, column=16, padx=(1, 3)
         )
@@ -2123,7 +2127,7 @@ class PdfCombinerApp(BaseTk):
         reader_toolbar.columnconfigure(19, minsize=112, uniform="reader_actions")
         reader_print_button = ttk.Button(
             reader_toolbar,
-            text="Печать",
+            text=tr("Печать"),
             width=6,
             image=self.editor_print_icon,
             compound="left",
@@ -2131,16 +2135,16 @@ class PdfCombinerApp(BaseTk):
             style="Accent.TButton",
         )
         reader_print_button.grid(row=0, column=18, sticky="nsew", padx=(2, 2))
-        self._tip(reader_print_button, "Напечатать открытый документ")
+        self._tip(reader_print_button, tr("Напечатать открытый документ"))
         reader_exit_button = ttk.Button(
             reader_toolbar,
-            text="Выйти",
+            text=tr("Выйти"),
             width=6,
             command=self._exit_editor_reading_mode,
             style="Accent.TButton",
         )
         reader_exit_button.grid(row=0, column=19, sticky="nsew", padx=(2, 0))
-        self._tip(reader_exit_button, "Выйти из режима чтения")
+        self._tip(reader_exit_button, tr("Выйти из режима чтения"))
         # Leave the search field flexible across Windows and RED OS font metrics.
         for button in reader_toolbar.winfo_children():
             if isinstance(button, ttk.Button) and button not in (reader_print_button, reader_exit_button):
@@ -2161,7 +2165,7 @@ class PdfCombinerApp(BaseTk):
         selection_properties = tk.Frame(self.editor_properties_host, bg=SURFACE_ALT)
         tk.Label(
             selection_properties,
-            text="Выберите объект для перемещения и изменения размера. Правый клик открывает действия для указанного места.",
+            text=tr("Выберите объект для перемещения и изменения размера. Правый клик открывает действия для указанного места."),
             bg=SURFACE_ALT,
             fg=MUTED,
             font=("Arial", 9),
@@ -2169,7 +2173,7 @@ class PdfCombinerApp(BaseTk):
         self.editor_property_frames["select"] = selection_properties
 
         text_panel, text_properties = self._editor_scrollable_property_row(self.editor_properties_host)
-        tk.Label(text_properties, text="Текст", bg=SURFACE_ALT, fg=TEXT).pack(side="left", padx=(0, 5))
+        tk.Label(text_properties, text=tr("Текст"), bg=SURFACE_ALT, fg=TEXT).pack(side="left", padx=(0, 5))
         self.editor_text_entry = ttk.Entry(text_properties, textvariable=self.editor_replace_text, width=28)
         self.editor_text_entry.pack(side="left", padx=(0, 6))
         self.editor_text_entry.bind("<Return>", lambda _event: self._start_text_placement())
@@ -2188,29 +2192,29 @@ class PdfCombinerApp(BaseTk):
         italic_button.pack(side="left", padx=1)
         underline_button = ttk.Checkbutton(text_properties, text="U", variable=self.editor_text_underline, width=2)
         underline_button.pack(side="left", padx=(1, 5))
-        self._tip(bold_button, "Жирный текст")
-        self._tip(italic_button, "Курсив")
-        self._tip(underline_button, "Подчёркнутый текст")
-        text_scan_effect = ttk.Checkbutton(text_properties, text="Скан", variable=self.editor_text_scan_effect)
+        self._tip(bold_button, tr("Жирный текст"))
+        self._tip(italic_button, tr("Курсив"))
+        self._tip(underline_button, tr("Подчёркнутый текст"))
+        text_scan_effect = ttk.Checkbutton(text_properties, text=tr("Скан"), variable=self.editor_text_scan_effect)
         text_scan_effect.pack(side="left", padx=(1, 4))
-        self._tip(text_scan_effect, "Эффект отсканированного текста")
-        tk.Label(text_properties, text="Цвет", bg=SURFACE_ALT, fg=TEXT).pack(side="left", padx=(0, 3))
+        self._tip(text_scan_effect, tr("Эффект отсканированного текста"))
+        tk.Label(text_properties, text=tr("Цвет"), bg=SURFACE_ALT, fg=TEXT).pack(side="left", padx=(0, 3))
         self.editor_color_button = self._build_editor_color_palette(
             text_properties,
             self.editor_text_color,
             self._set_editor_text_color,
             self._choose_editor_text_color,
         )
-        ttk.Button(text_properties, text="Разместить", command=self._start_text_placement, style="Accent.TButton").pack(side="left", padx=1)
-        ttk.Button(text_properties, text="Применить", command=self._apply_selected_text_properties).pack(side="left", padx=1)
+        ttk.Button(text_properties, text=tr("Разместить"), command=self._start_text_placement, style="Accent.TButton").pack(side="left", padx=1)
+        ttk.Button(text_properties, text=tr("Применить"), command=self._apply_selected_text_properties).pack(side="left", padx=1)
         self.editor_property_frames["text"] = text_panel
 
         word_panel, word_properties = self._editor_scrollable_property_row(self.editor_properties_host)
         ttk.Button(
-            word_properties, text="Применить", command=self._apply_selected_word_properties,
+            word_properties, text=tr("Применить"), command=self._apply_selected_word_properties,
             style="WordApply.Accent.TButton",
         ).pack(side="right", padx=1)
-        tk.Label(word_properties, text="Слово", bg=SURFACE_ALT, fg=TEXT).pack(side="left", padx=(0, 4))
+        tk.Label(word_properties, text=tr("Слово"), bg=SURFACE_ALT, fg=TEXT).pack(side="left", padx=(0, 4))
         self.editor_word_entry = ttk.Entry(word_properties, textvariable=self.editor_replace_text, width=11)
         self.editor_word_entry.pack(side="left", padx=(0, 5))
         self.editor_word_font_box = ttk.Combobox(
@@ -2228,16 +2232,16 @@ class PdfCombinerApp(BaseTk):
         word_italic_button.pack(side="left", padx=(1, 4))
         word_underline_button = ttk.Checkbutton(word_properties, text="U", variable=self.editor_text_underline, width=1)
         word_underline_button.pack(side="left", padx=1)
-        self._tip(word_underline_button, "Подчёркнутый текст")
+        self._tip(word_underline_button, tr("Подчёркнутый текст"))
         word_scan_effect = ttk.Checkbutton(
             word_properties,
-            text="Скан",
+            text=tr("Скан"),
             variable=self.editor_word_scan_effect,
         )
         word_scan_effect.pack(side="left", padx=(1, 4))
-        self._tip(word_bold_button, "Жирный текст")
-        self._tip(word_italic_button, "Курсив")
-        self._tip(word_scan_effect, "Эффект отсканированного текста")
+        self._tip(word_bold_button, tr("Жирный текст"))
+        self._tip(word_italic_button, tr("Курсив"))
+        self._tip(word_scan_effect, tr("Эффект отсканированного текста"))
         tk.Label(word_properties, text="X", bg=SURFACE_ALT, fg=TEXT).pack(side="left", padx=(0, 2))
         ttk.Button(word_properties, text="←", width=2, style="WordNudge.TButton", command=lambda: self._nudge_selected_word(-0.1, 0.0)).pack(side="left", padx=1)
         ttk.Spinbox(
@@ -2260,7 +2264,7 @@ class PdfCombinerApp(BaseTk):
             width=5,
         ).pack(side="left", padx=1)
         ttk.Button(word_properties, text="↓", width=2, style="WordNudge.TButton", command=lambda: self._nudge_selected_word(0.0, 0.1)).pack(side="left", padx=(1, 4))
-        tk.Label(word_properties, text="Цвет", bg=SURFACE_ALT, fg=TEXT).pack(side="left", padx=(0, 3))
+        tk.Label(word_properties, text=tr("Цвет"), bg=SURFACE_ALT, fg=TEXT).pack(side="left", padx=(0, 3))
         self.editor_word_color_button = self._build_editor_color_palette(
             word_properties,
             self.editor_text_color,
@@ -2274,8 +2278,8 @@ class PdfCombinerApp(BaseTk):
             "load": create_editor_tool_icon("preset_load", DEEP_BLUE, 20),
         }
         for key, command, tooltip in (
-            ("pick", self._start_word_color_pick, "Пипетка: выбрать цвет текста на документе"),
-            ("save", self._save_word_style, "Сохранить настройки слова"),
+            ("pick", self._start_word_color_pick, tr("Пипетка: выбрать цвет текста на документе")),
+            ("save", self._save_word_style, tr("Сохранить настройки слова")),
         ):
             button = ttk.Button(word_properties, image=self.editor_word_extra_icons[key],
                                 command=command, style="WordTool.TButton", width=3)
@@ -2287,26 +2291,26 @@ class PdfCombinerApp(BaseTk):
                                                postcommand=self._refresh_word_styles_menu)
         presets.configure(menu=self.editor_word_styles_menu)
         presets.pack(side="left", padx=2)
-        self._tip(presets, "Загрузить сохранённые настройки слова")
+        self._tip(presets, tr("Загрузить сохранённые настройки слова"))
         self.editor_property_frames["word"] = word_panel
 
         draw_properties = tk.Frame(self.editor_properties_host, bg=SURFACE_ALT)
-        tk.Label(draw_properties, text="Цвет", bg=SURFACE_ALT, fg=TEXT).pack(side="left", padx=(0, 3))
+        tk.Label(draw_properties, text=tr("Цвет"), bg=SURFACE_ALT, fg=TEXT).pack(side="left", padx=(0, 3))
         self.editor_draw_color_button = self._build_editor_color_palette(
             draw_properties,
             self.editor_draw_color,
             self._set_editor_draw_color,
             self._choose_editor_draw_color,
         )
-        tk.Label(draw_properties, text="Толщина карандаша", bg=SURFACE_ALT, fg=TEXT).pack(side="left")
+        tk.Label(draw_properties, text=tr("Толщина карандаша"), bg=SURFACE_ALT, fg=TEXT).pack(side="left")
         ttk.Spinbox(draw_properties, from_=1, to=20, increment=0.5, textvariable=self.editor_pencil_width, width=5).pack(side="left", padx=(6, 16))
-        tk.Label(draw_properties, text="Размер ластика", bg=SURFACE_ALT, fg=TEXT).pack(side="left")
+        tk.Label(draw_properties, text=tr("Размер ластика"), bg=SURFACE_ALT, fg=TEXT).pack(side="left")
         ttk.Spinbox(draw_properties, from_=4, to=80, increment=1, textvariable=self.editor_eraser_width, width=5).pack(side="left", padx=(6, 12))
-        tk.Label(draw_properties, text="Рисуйте с зажатой левой кнопкой мыши", bg=SURFACE_ALT, fg=MUTED, font=("Arial", 9)).pack(side="left")
+        tk.Label(draw_properties, text=tr("Рисуйте с зажатой левой кнопкой мыши"), bg=SURFACE_ALT, fg=MUTED, font=("Arial", 9)).pack(side="left")
         self.editor_property_frames["draw"] = draw_properties
 
         area_properties = tk.Frame(self.editor_properties_host, bg=SURFACE_ALT)
-        tk.Label(area_properties, text="Цвет области", bg=SURFACE_ALT, fg=TEXT).pack(side="left", padx=(0, 8))
+        tk.Label(area_properties, text=tr("Цвет области"), bg=SURFACE_ALT, fg=TEXT).pack(side="left", padx=(0, 8))
         self.editor_area_color_button = self._build_editor_color_palette(
             area_properties, self.editor_draw_color, self._set_editor_draw_color, self._choose_editor_draw_color)
         self.editor_property_frames["area"] = area_properties
@@ -2314,23 +2318,23 @@ class PdfCombinerApp(BaseTk):
         crop_properties = tk.Frame(self.editor_properties_host, bg=SURFACE_ALT)
         tk.Label(
             crop_properties,
-            text="После применения размер страницы станет равен выбранной области",
+            text=tr("После применения размер страницы станет равен выбранной области"),
             bg=SURFACE_ALT,
             fg=MUTED,
         ).pack(side="left")
         self.editor_crop_apply_button = ttk.Button(
             crop_properties,
-            text="Применить обрезку",
+            text=tr("Применить обрезку"),
             command=self._apply_pending_crop,
             style="Accent.TButton",
         )
         self.editor_crop_apply_button.pack(side="left", padx=(12, 4))
-        ttk.Button(crop_properties, text="Отмена", command=self._cancel_pending_crop).pack(side="left")
+        ttk.Button(crop_properties, text=tr("Отмена"), command=self._cancel_pending_crop).pack(side="left")
         self.editor_property_frames["crop"] = crop_properties
 
         signature_properties = tk.Frame(self.editor_properties_host, bg=SURFACE_ALT)
-        tk.Label(signature_properties, text="Подписи и отметки хранятся локально на этом компьютере", bg=SURFACE_ALT, fg=MUTED).pack(side="left")
-        ttk.Button(signature_properties, text="Открыть библиотеку", command=self._open_signature_library, style="Accent.TButton").pack(side="left", padx=(12, 0))
+        tk.Label(signature_properties, text=tr("Подписи и отметки хранятся локально на этом компьютере"), bg=SURFACE_ALT, fg=MUTED).pack(side="left")
+        ttk.Button(signature_properties, text=tr("Открыть библиотеку"), command=self._open_signature_library, style="Accent.TButton").pack(side="left", padx=(12, 0))
         self.editor_property_frames["signature"] = signature_properties
         self._show_editor_properties("select")
 
@@ -2361,11 +2365,11 @@ class PdfCombinerApp(BaseTk):
         thumbnail_panel.rowconfigure(1, weight=1)
         thumbnail_heading = tk.Frame(thumbnail_panel, bg=PANEL)
         thumbnail_heading.columnconfigure(0, weight=1)
-        tk.Label(thumbnail_heading, text="Страницы", bg=PANEL, fg=TEXT, font=("Arial", 10, "bold"), anchor="w").grid(row=0, column=0, sticky="w")
+        tk.Label(thumbnail_heading, text=tr("Страницы"), bg=PANEL, fg=TEXT, font=("Arial", 10, "bold"), anchor="w").grid(row=0, column=0, sticky="w")
         self.editor_page_action_icons = {kind: create_action_icon(kind, DEEP_BLUE, 18) for kind in ("add", "clear")}
         for column, (kind, tip, command) in enumerate((
-                ("add", "Добавить файлы в документ", self._choose_editor_file),
-                ("clear", "Удалить выбранные страницы", self._delete_editor_selected_pages)), start=1):
+                ("add", tr("Добавить файлы в документ"), self._choose_editor_file),
+                ("clear", tr("Удалить выбранные страницы"), self._delete_editor_selected_pages)), start=1):
             button = ttk.Button(thumbnail_heading, image=self.editor_page_action_icons[kind],
                                 style="Sidebar.Tool.TButton", command=command)
             button.grid(row=0, column=column, padx=1)
@@ -2454,7 +2458,7 @@ class PdfCombinerApp(BaseTk):
         edits_shell.grid_propagate(False)
         edits_panel.columnconfigure(0, weight=1)
         edits_panel.rowconfigure(1, weight=1)
-        tk.Label(edits_panel, text="Правки страницы", bg=PANEL, fg=DEEP_BLUE, font=("Arial", 10, "bold"), anchor="w").grid(
+        tk.Label(edits_panel, text=tr("Правки страницы"), bg=PANEL, fg=DEEP_BLUE, font=("Arial", 10, "bold"), anchor="w").grid(
             row=0,
             column=0,
             sticky="ew",
@@ -2482,14 +2486,14 @@ class PdfCombinerApp(BaseTk):
         content.add(thumbnail_shell, minsize=145, width=170, stretch="never")
         content.add(canvas_shell, minsize=470, stretch="always")
         self._sync_editor_edits_visibility()
-        self._tip(self.editor_search_entry, "Введите слово или фразу. Поиск не учитывает регистр и различает страницы документа.")
-        self._tip(self.editor_search_previous_button, "Перейти к предыдущему найденному совпадению.")
-        self._tip(self.editor_search_next_button, "Перейти к следующему найденному совпадению.")
+        self._tip(self.editor_search_entry, tr("Введите слово или фразу. Поиск не учитывает регистр и различает страницы документа."))
+        self._tip(self.editor_search_previous_button, tr("Перейти к предыдущему найденному совпадению."))
+        self._tip(self.editor_search_next_button, tr("Перейти к следующему найденному совпадению."))
         self._tip(
             self.editor_ocr_button,
-            "Распознаёт текст в документе, после чего его можно выделять мышью, копировать и искать по словам.",
+            tr("Распознаёт текст в документе, после чего его можно выделять мышью, копировать и искать по словам."),
         )
-        self._tip(self.editor_thumbnail_canvas, "Перетаскивайте страницы для перестановки. Ctrl: несколько страниц; Shift: диапазон; ПКМ: команды страницы.")
+        self._tip(self.editor_thumbnail_canvas, tr("Перетаскивайте страницы для перестановки. Ctrl: несколько страниц; Shift: диапазон; ПКМ: команды страницы."))
         self.editor_thumbnail_canvas.bind("<Button-1>", self._clear_editor_page_selection)
         self.editor_thumbnail_grid.bind("<Button-1>", self._clear_editor_page_selection)
         self.editor_thumbnail_canvas.bind("<Button-3>", lambda event: self._show_editor_thumbnail_context_menu(event, None))
@@ -2501,7 +2505,7 @@ class PdfCombinerApp(BaseTk):
         self.bind("<ButtonRelease-1>", self._release_editor_thumbnail, add="+")
         self._enable_drop(self.editor_thumbnail_canvas, self._handle_editor_drop)
         self._enable_drop(self.editor_thumbnail_grid, self._handle_editor_drop)
-        self._tip(self.editor_edits_list, "Выберите правку, чтобы быстро перейти к ней и выделить её на странице.")
+        self._tip(self.editor_edits_list, tr("Выберите правку, чтобы быстро перейти к ней и выделить её на странице."))
         self._refresh_signature_list()
         self._enable_drop(frame, self._handle_editor_drop)
         return frame
@@ -2517,7 +2521,7 @@ class PdfCombinerApp(BaseTk):
         heading = tk.Frame(frame, bg=PANEL)
         heading.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 7))
         heading.columnconfigure(0, weight=1)
-        tk.Label(heading, text="Создание PDF из изображений", bg=PANEL, fg=DEEP_BLUE, font=("Arial", 15, "bold")).grid(row=0, column=0, sticky="w")
+        tk.Label(heading, text=tr("Создание PDF из изображений"), bg=PANEL, fg=DEEP_BLUE, font=("Arial", 15, "bold")).grid(row=0, column=0, sticky="w")
         tk.Label(heading, textvariable=self.image_files_summary, bg=PANEL, fg=MUTED).grid(row=0, column=1, sticky="e")
 
         list_shell, list_holder = create_rounded_card(
@@ -2547,15 +2551,15 @@ class PdfCombinerApp(BaseTk):
         self._enable_drop(self.image_list, self._handle_images_drop)
         self.image_empty_state = self._create_file_drop_state(
             list_body,
-            "Перетащите изображения",
-            "JPG, PNG, WEBP, TIFF, BMP или GIF\nили нажмите здесь для выбора файлов",
+            tr("Перетащите изображения"),
+            tr("JPG, PNG, WEBP, TIFF, BMP или GIF\nили нажмите здесь для выбора файлов"),
             self._handle_images_drop,
             self._add_image_files,
         )
         list_actions = tk.Frame(list_holder, bg=DROP_ZONE_BG)
         list_actions.grid(row=1, column=0, sticky="ew", pady=(10, 0))
-        ttk.Button(list_actions, text="Добавить изображения", command=self._add_image_files, style="Accent.TButton").pack(side="left")
-        ttk.Button(list_actions, text="Удалить выбранные", command=self._remove_image_files).pack(side="left", padx=5)
+        ttk.Button(list_actions, text=tr("Добавить изображения"), command=self._add_image_files, style="Accent.TButton").pack(side="left")
+        ttk.Button(list_actions, text=tr("Удалить выбранные"), command=self._remove_image_files).pack(side="left", padx=5)
 
         panel_shell, panel = create_rounded_card(
             frame, fill=DROP_ZONE_BG, outer_bg=PANEL, radius=18, border=BORDER, padding=16, width=330
@@ -2563,30 +2567,30 @@ class PdfCombinerApp(BaseTk):
         panel_shell.grid(row=1, column=1, sticky="ns")
         panel_shell.grid_propagate(False)
         panel.columnconfigure(0, weight=1)
-        tk.Label(panel, text="Параметры результата", bg=DROP_ZONE_BG, fg=DEEP_BLUE, font=("Arial", 12, "bold")).grid(row=0, column=0, sticky="w")
-        tk.Label(panel, text="Качество (DPI)", bg=DROP_ZONE_BG, fg=TEXT).grid(row=1, column=0, sticky="w", pady=(16, 3))
+        tk.Label(panel, text=tr("Параметры результата"), bg=DROP_ZONE_BG, fg=DEEP_BLUE, font=("Arial", 12, "bold")).grid(row=0, column=0, sticky="w")
+        tk.Label(panel, text=tr("Качество (DPI)"), bg=DROP_ZONE_BG, fg=TEXT).grid(row=1, column=0, sticky="w", pady=(16, 3))
         ttk.Spinbox(panel, from_=36, to=1200, textvariable=self.image_dpi, width=12).grid(row=2, column=0, sticky="ew")
-        ttk.Checkbutton(panel, text="Создавать отдельный PDF для каждого файла", variable=self.image_one_per_file, style="Card.TCheckbutton").grid(row=3, column=0, sticky="w", pady=(14, 6))
-        tk.Label(panel, text="Папка для отдельных PDF", bg=DROP_ZONE_BG, fg=TEXT).grid(row=4, column=0, sticky="w", pady=(8, 3))
+        ttk.Checkbutton(panel, text=tr("Создавать отдельный PDF для каждого файла"), variable=self.image_one_per_file, style="Card.TCheckbutton").grid(row=3, column=0, sticky="w", pady=(14, 6))
+        tk.Label(panel, text=tr("Папка для отдельных PDF"), bg=DROP_ZONE_BG, fg=TEXT).grid(row=4, column=0, sticky="w", pady=(8, 3))
         ttk.Entry(panel, textvariable=self.image_output_dir).grid(row=5, column=0, sticky="ew")
-        ttk.Button(panel, text="Выбрать папку…", command=lambda: self._choose_dir(self.image_output_dir)).grid(row=6, column=0, sticky="ew", pady=(5, 0))
-        tk.Label(panel, text="Если папка не выбрана, результат сохранится рядом с первым изображением.", bg=DROP_ZONE_BG, fg=MUTED, wraplength=290, justify="left", font=("Arial", 9)).grid(row=7, column=0, sticky="ew", pady=(10, 0))
-        ttk.Button(panel, text="Создать PDF", command=self._run_images, style="Accent.TButton").grid(row=8, column=0, sticky="ew", pady=(22, 0))
+        ttk.Button(panel, text=tr("Выбрать папку…"), command=lambda: self._choose_dir(self.image_output_dir)).grid(row=6, column=0, sticky="ew", pady=(5, 0))
+        tk.Label(panel, text=tr("Если папка не выбрана, результат сохранится рядом с первым изображением."), bg=DROP_ZONE_BG, fg=MUTED, wraplength=290, justify="left", font=("Arial", 9)).grid(row=7, column=0, sticky="ew", pady=(10, 0))
+        ttk.Button(panel, text=tr("Создать PDF"), command=self._run_images, style="Accent.TButton").grid(row=8, column=0, sticky="ew", pady=(22, 0))
         return frame
 
     def _pdf_images_tab(self, parent) -> ttk.Frame:
         frame = ttk.Frame(parent, padding=(10, 8, 10, 10), style="Panel.TFrame")
         frame.columnconfigure(0, weight=1)
-        tk.Label(frame, text="Экспорт страниц PDF в изображения", bg=PANEL, fg=DEEP_BLUE, font=("Arial", 15, "bold")).grid(row=0, column=0, sticky="w", pady=(0, 8))
+        tk.Label(frame, text=tr("Экспорт страниц PDF в изображения"), bg=PANEL, fg=DEEP_BLUE, font=("Arial", 15, "bold")).grid(row=0, column=0, sticky="w", pady=(0, 8))
 
         card_shell, card = create_rounded_card(
             frame, fill=DROP_ZONE_BG, outer_bg=PANEL, radius=18, border=BORDER, padding=20
         )
         card_shell.grid(row=1, column=0, sticky="new")
         card.columnconfigure(1, weight=1)
-        tk.Label(card, text="Исходный PDF", bg=DROP_ZONE_BG, fg=TEXT).grid(row=0, column=0, sticky="w", pady=6)
+        tk.Label(card, text=tr("Исходный PDF"), bg=DROP_ZONE_BG, fg=TEXT).grid(row=0, column=0, sticky="w", pady=6)
         ttk.Entry(card, textvariable=self.pdf_image_input).grid(row=0, column=1, sticky="ew", padx=10, pady=6)
-        ttk.Button(card, text="Выбрать…", command=lambda: self._open_pdf(self.pdf_image_input), style="Accent.TButton").grid(row=0, column=2, pady=6)
+        ttk.Button(card, text=tr("Выбрать…"), command=lambda: self._open_pdf(self.pdf_image_input), style="Accent.TButton").grid(row=0, column=2, pady=6)
 
         drop_shell, drop = create_rounded_card(
             card,
@@ -2606,32 +2610,32 @@ class PdfCombinerApp(BaseTk):
         drop_text.pack(side="left", fill="x", expand=True)
         tk.Label(
             drop_text,
-            text="Перетащите PDF сюда",
+            text=tr("Перетащите PDF сюда"),
             bg=DROP_ZONE_BG,
             fg=DEEP_BLUE,
             font=(FONT_FAMILY, 11, "bold"),
         ).pack(anchor="w")
         tk.Label(
             drop_text,
-            text="Страницы будут сохранены как JPG, PNG, WEBP или TIFF",
+            text=tr("Страницы будут сохранены как JPG, PNG, WEBP или TIFF"),
             bg=DROP_ZONE_BG,
             fg=MUTED,
             font=(FONT_FAMILY, 9),
         ).pack(anchor="w", pady=(3, 0))
 
-        tk.Label(card, text="Папка результата", bg=DROP_ZONE_BG, fg=TEXT).grid(row=2, column=0, sticky="w", pady=6)
+        tk.Label(card, text=tr("Папка результата"), bg=DROP_ZONE_BG, fg=TEXT).grid(row=2, column=0, sticky="w", pady=6)
         ttk.Entry(card, textvariable=self.pdf_image_output_dir).grid(row=2, column=1, sticky="ew", padx=10, pady=6)
-        ttk.Button(card, text="Выбрать…", command=lambda: self._choose_dir(self.pdf_image_output_dir)).grid(row=2, column=2, pady=6)
+        ttk.Button(card, text=tr("Выбрать…"), command=lambda: self._choose_dir(self.pdf_image_output_dir)).grid(row=2, column=2, pady=6)
 
         options = tk.Frame(card, bg=DROP_ZONE_BG)
         options.grid(row=3, column=1, sticky="w", padx=10, pady=(8, 4))
-        tk.Label(options, text="Формат", bg=DROP_ZONE_BG, fg=TEXT).pack(side="left")
+        tk.Label(options, text=tr("Формат"), bg=DROP_ZONE_BG, fg=TEXT).pack(side="left")
         format_box = ttk.Combobox(options, textvariable=self.pdf_image_format, values=("jpg", "png", "webp", "tiff"), state="readonly", width=10)
         format_box.pack(side="left", padx=(6, 18))
         tk.Label(options, text="DPI", bg=DROP_ZONE_BG, fg=TEXT).pack(side="left")
         ttk.Spinbox(options, from_=36, to=1200, textvariable=self.pdf_image_dpi, width=8).pack(side="left", padx=(6, 0))
-        tk.Label(card, text="Пустая папка результата означает сохранение рядом с исходным PDF.", bg=DROP_ZONE_BG, fg=MUTED, font=("Arial", 9)).grid(row=4, column=1, sticky="w", padx=10, pady=(2, 14))
-        ttk.Button(card, text="Преобразовать", command=self._run_pdf_to_images, style="Accent.TButton").grid(row=5, column=1, sticky="w", padx=10)
+        tk.Label(card, text=tr("Пустая папка результата означает сохранение рядом с исходным PDF."), bg=DROP_ZONE_BG, fg=MUTED, font=("Arial", 9)).grid(row=4, column=1, sticky="w", padx=10, pady=(2, 14))
+        ttk.Button(card, text=tr("Преобразовать"), command=self._run_pdf_to_images, style="Accent.TButton").grid(row=5, column=1, sticky="w", padx=10)
         self._enable_drop(frame, self._handle_pdf_images_drop)
         self._enable_drop(drop_shell, self._handle_pdf_images_drop)
         self._enable_drop(drop, self._handle_pdf_images_drop)
@@ -2644,7 +2648,7 @@ class PdfCombinerApp(BaseTk):
         self.docx_output_dir = tk.StringVar()
         self.pdf_docx_output_dir = tk.StringVar()
 
-        tk.Label(frame, text="Преобразование документов", bg=PANEL, fg=DEEP_BLUE, font=("Arial", 15, "bold")).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 8))
+        tk.Label(frame, text=tr("Преобразование документов"), bg=PANEL, fg=DEEP_BLUE, font=("Arial", 15, "bold")).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 8))
 
         docx_shell, docx_panel = create_rounded_card(
             frame, fill=DROP_ZONE_BG, outer_bg=PANEL, radius=18, border=BORDER, padding=14
@@ -2659,8 +2663,8 @@ class PdfCombinerApp(BaseTk):
         tk.Label(title_row, textvariable=self.docx_files_summary, bg=DROP_ZONE_BG, fg=MUTED).grid(row=0, column=1, sticky="e")
         doc_actions = tk.Frame(docx_panel, bg=DROP_ZONE_BG)
         doc_actions.grid(row=1, column=0, sticky="ew", pady=(0, 7))
-        ttk.Button(doc_actions, text="Добавить документы", command=self._add_docx_files, style="Accent.TButton").pack(side="left")
-        ttk.Button(doc_actions, text="Удалить", command=self._remove_docx_files).pack(side="left", padx=5)
+        ttk.Button(doc_actions, text=tr("Добавить документы"), command=self._add_docx_files, style="Accent.TButton").pack(side="left")
+        ttk.Button(doc_actions, text=tr("Удалить"), command=self._remove_docx_files).pack(side="left", padx=5)
         docx_list_shell, docx_list_body = create_rounded_card(
             docx_panel, fill=PANEL, outer_bg=DROP_ZONE_BG, radius=13, border=BORDER, padding=5
         )
@@ -2672,8 +2676,8 @@ class PdfCombinerApp(BaseTk):
         self._enable_drop(self.docx_list, self._handle_docx_drop)
         self.docx_empty_state = self._create_file_drop_state(
             docx_list_body,
-            "Перетащите документы",
-            "DOCX или DOC для преобразования в PDF\nили нажмите здесь для выбора файлов",
+            tr("Перетащите документы"),
+            tr("DOCX или DOC для преобразования в PDF\nили нажмите здесь для выбора файлов"),
             self._handle_docx_drop,
             self._add_docx_files,
         )
@@ -2681,9 +2685,9 @@ class PdfCombinerApp(BaseTk):
         doc_output.grid(row=3, column=0, sticky="ew", pady=(9, 0))
         doc_output.columnconfigure(0, weight=1)
         ttk.Entry(doc_output, textvariable=self.docx_output_dir).grid(row=0, column=0, sticky="ew")
-        ttk.Button(doc_output, text="Папка…", command=lambda: self._choose_dir(self.docx_output_dir)).grid(row=0, column=1, padx=(5, 0))
+        ttk.Button(doc_output, text=tr("Папка…"), command=lambda: self._choose_dir(self.docx_output_dir)).grid(row=0, column=1, padx=(5, 0))
         self.docx_convert_button = ttk.Button(
-            docx_panel, text="Преобразовать в PDF", command=self._run_docx, style="Accent.TButton"
+            docx_panel, text=tr("Преобразовать в PDF"), command=self._run_docx, style="Accent.TButton"
         )
         self.docx_convert_button.grid(row=4, column=0, sticky="ew", pady=(8, 0))
 
@@ -2700,8 +2704,8 @@ class PdfCombinerApp(BaseTk):
         tk.Label(pdf_title_row, textvariable=self.pdf_docx_files_summary, bg=DROP_ZONE_BG, fg=MUTED).grid(row=0, column=1, sticky="e")
         pdf_actions = tk.Frame(pdf_panel, bg=DROP_ZONE_BG)
         pdf_actions.grid(row=1, column=0, sticky="ew", pady=(0, 7))
-        ttk.Button(pdf_actions, text="Добавить PDF", command=self._add_pdf_docx_files, style="Accent.TButton").pack(side="left")
-        ttk.Button(pdf_actions, text="Удалить", command=self._remove_pdf_docx_files).pack(side="left", padx=5)
+        ttk.Button(pdf_actions, text=tr("Добавить PDF"), command=self._add_pdf_docx_files, style="Accent.TButton").pack(side="left")
+        ttk.Button(pdf_actions, text=tr("Удалить"), command=self._remove_pdf_docx_files).pack(side="left", padx=5)
         pdf_list_shell, pdf_list_body = create_rounded_card(
             pdf_panel, fill=PANEL, outer_bg=DROP_ZONE_BG, radius=13, border=BORDER, padding=5
         )
@@ -2713,8 +2717,8 @@ class PdfCombinerApp(BaseTk):
         self._enable_drop(self.pdf_docx_list, self._handle_pdf_docx_drop)
         self.pdf_docx_empty_state = self._create_file_drop_state(
             pdf_list_body,
-            "Перетащите PDF",
-            f"Преобразование в DOCX через {'Microsoft Word' if os.name == 'nt' else 'R7-Офис'} или встроенное OCR\nили нажмите здесь для выбора файлов",
+            tr("Перетащите PDF"),
+            tr(f"Преобразование в DOCX через {'Microsoft Word' if os.name == 'nt' else 'R7-Office'} или встроенное OCR\nили нажмите здесь для выбора файлов"),
             self._handle_pdf_docx_drop,
             self._add_pdf_docx_files,
         )
@@ -2722,13 +2726,13 @@ class PdfCombinerApp(BaseTk):
         pdf_mode.grid(row=3, column=0, sticky="ew", pady=(8, 0))
         ttk.Checkbutton(
             pdf_mode,
-            text="Предварительно распознать текст",
+            text=tr("Предварительно распознать текст"),
             variable=self.pdf_docx_pre_ocr,
             style="Card.TCheckbutton",
         ).grid(row=0, column=0, sticky="w")
         language_row = tk.Frame(pdf_mode, bg=DROP_ZONE_BG)
         language_row.grid(row=0, column=1, sticky="w", padx=(12, 0))
-        tk.Label(language_row, text="Язык текста", bg=DROP_ZONE_BG, fg=TEXT).pack(side="left", padx=(0, 5))
+        tk.Label(language_row, text=tr("Язык текста"), bg=DROP_ZONE_BG, fg=TEXT).pack(side="left", padx=(0, 5))
         self.pdf_docx_ocr_language_box = ttk.Combobox(
             language_row,
             textvariable=self.pdf_docx_ocr_language,
@@ -2739,33 +2743,33 @@ class PdfCombinerApp(BaseTk):
         self.pdf_docx_ocr_language_box.pack(side="left")
         self._tip(
             self.pdf_docx_ocr_language_box,
-            "rus — только русский текст и меньше латинских артефактов; rus+eng — смешанный документ; eng — английский.",
+            tr("rus — только русский текст и меньше латинских артефактов; rus+eng — смешанный документ; eng — английский."),
         )
         self.pdf_docx_preserve_graphics_check = ttk.Checkbutton(
             pdf_mode,
-            text="Сохранить графику",
+            text=tr("Сохранить графику"),
             variable=self.pdf_docx_preserve_graphics,
             style="Card.TCheckbutton",
         )
         self.pdf_docx_preserve_graphics_check.grid(row=1, column=0, sticky="w", pady=(6, 0))
         self._tip(
             self.pdf_docx_preserve_graphics_check,
-            "Дополнительный режим: переносит логотипы, линии, печати и другую графику. Отключите для чистого DOCX только с редактируемым текстом и таблицами.",
+            tr("Дополнительный режим: переносит логотипы, линии, печати и другую графику. Отключите для чистого DOCX только с редактируемым текстом и таблицами."),
         )
         self.pdf_docx_detect_tables_check = ttk.Checkbutton(
             pdf_mode,
-            text="Распознавать таблицы",
+            text=tr("Распознавать таблицы"),
             variable=self.pdf_docx_detect_tables,
             style="Card.TCheckbutton",
         )
         self.pdf_docx_detect_tables_check.grid(row=1, column=1, sticky="w", padx=(12, 0), pady=(6, 0))
         self._tip(
             self.pdf_docx_detect_tables_check,
-            "Создавать редактируемые таблицы по сетке документа. Отключите, если нужен только связный текст без ячеек.",
+            tr("Создавать редактируемые таблицы по сетке документа. Отключите, если нужен только связный текст без ячеек."),
         )
         tk.Label(
             pdf_panel,
-            text="По умолчанию создаётся чистый DOCX: редактируемый текст и таблицы без графики. Включите «Сохранить графику», если важнее визуальное сходство с PDF. Точность зависит от качества скана.",
+            text=tr("По умолчанию создаётся чистый DOCX: редактируемый текст и таблицы без графики. Включите «Сохранить графику», если важнее визуальное сходство с PDF. Точность зависит от качества скана."),
             bg="#FFF7D6",
             fg="#735C00",
             wraplength=500,
@@ -2777,9 +2781,9 @@ class PdfCombinerApp(BaseTk):
         pdf_output.grid(row=5, column=0, sticky="ew", pady=(9, 0))
         pdf_output.columnconfigure(0, weight=1)
         ttk.Entry(pdf_output, textvariable=self.pdf_docx_output_dir).grid(row=0, column=0, sticky="ew")
-        ttk.Button(pdf_output, text="Папка…", command=lambda: self._choose_dir(self.pdf_docx_output_dir)).grid(row=0, column=1, padx=(5, 0))
+        ttk.Button(pdf_output, text=tr("Папка…"), command=lambda: self._choose_dir(self.pdf_docx_output_dir)).grid(row=0, column=1, padx=(5, 0))
         self.pdf_docx_convert_button = ttk.Button(
-            pdf_panel, text="Преобразовать в DOCX", command=self._run_pdf_docx, style="Accent.TButton"
+            pdf_panel, text=tr("Преобразовать в DOCX"), command=self._run_pdf_docx, style="Accent.TButton"
         )
         self.pdf_docx_convert_button.grid(row=6, column=0, sticky="ew", pady=(8, 0))
         progress_shell, progress_panel = create_rounded_card(
@@ -2812,7 +2816,7 @@ class PdfCombinerApp(BaseTk):
         heading = tk.Frame(frame, bg=PANEL)
         heading.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 7))
         heading.columnconfigure(0, weight=1)
-        tk.Label(heading, text="Сжатие PDF", bg=PANEL, fg=DEEP_BLUE, font=("Arial", 15, "bold")).grid(row=0, column=0, sticky="w")
+        tk.Label(heading, text=tr("Сжатие PDF"), bg=PANEL, fg=DEEP_BLUE, font=("Arial", 15, "bold")).grid(row=0, column=0, sticky="w")
         tk.Label(heading, textvariable=self.compress_files_summary, bg=PANEL, fg=MUTED).grid(row=0, column=1, sticky="e")
 
         list_shell, list_holder = create_rounded_card(
@@ -2832,16 +2836,16 @@ class PdfCombinerApp(BaseTk):
         self._enable_drop(self.compress_list, self._handle_compress_drop)
         self.compress_empty_state = self._create_file_drop_state(
             compress_body,
-            "Перетащите PDF для сжатия",
-            "Можно добавить один документ или целую партию\nили нажмите здесь для выбора файлов",
+            tr("Перетащите PDF для сжатия"),
+            tr("Можно добавить один документ или целую партию\nили нажмите здесь для выбора файлов"),
             self._handle_compress_drop,
             self._add_compress_files,
         )
         compress_actions = tk.Frame(list_holder, bg=DROP_ZONE_BG)
         compress_actions.grid(row=1, column=0, sticky="ew", pady=(10, 0))
-        ttk.Button(compress_actions, text="Добавить PDF", command=self._add_compress_files, style="Accent.TButton").pack(side="left")
-        ttk.Button(compress_actions, text="Удалить", command=self._remove_compress_files).pack(side="left", padx=5)
-        ttk.Button(compress_actions, text="Очистить список", command=self._clear_compress_files).pack(side="left")
+        ttk.Button(compress_actions, text=tr("Добавить PDF"), command=self._add_compress_files, style="Accent.TButton").pack(side="left")
+        ttk.Button(compress_actions, text=tr("Удалить"), command=self._remove_compress_files).pack(side="left", padx=5)
+        ttk.Button(compress_actions, text=tr("Очистить список"), command=self._clear_compress_files).pack(side="left")
 
         panel_shell, panel = create_rounded_card(
             frame, fill=DROP_ZONE_BG, outer_bg=PANEL, radius=18, border=BORDER, padding=12, width=370
@@ -2849,19 +2853,19 @@ class PdfCombinerApp(BaseTk):
         panel_shell.grid(row=1, column=1, sticky="ns")
         panel_shell.grid_propagate(False)
         panel.columnconfigure(0, weight=1)
-        tk.Label(panel, text="Параметры сжатия", bg=DROP_ZONE_BG, fg=DEEP_BLUE, font=("Arial", 12, "bold")).grid(row=0, column=0, sticky="w")
-        tk.Label(panel, text="Папка результата", bg=DROP_ZONE_BG, fg=TEXT).grid(row=1, column=0, sticky="w", pady=(10, 3))
+        tk.Label(panel, text=tr("Параметры сжатия"), bg=DROP_ZONE_BG, fg=DEEP_BLUE, font=("Arial", 12, "bold")).grid(row=0, column=0, sticky="w")
+        tk.Label(panel, text=tr("Папка результата"), bg=DROP_ZONE_BG, fg=TEXT).grid(row=1, column=0, sticky="w", pady=(10, 3))
         output_row = tk.Frame(panel, bg=DROP_ZONE_BG)
         output_row.grid(row=2, column=0, sticky="ew")
         output_row.columnconfigure(0, weight=1)
         ttk.Entry(output_row, textvariable=self.compress_output_dir).grid(row=0, column=0, sticky="ew")
-        ttk.Button(output_row, text="Выбрать…", command=lambda: self._choose_dir(self.compress_output_dir)).grid(
+        ttk.Button(output_row, text=tr("Выбрать…"), command=lambda: self._choose_dir(self.compress_output_dir)).grid(
             row=0, column=1, padx=(5, 0)
         )
-        tk.Label(panel, text="Сжатие", bg=DROP_ZONE_BG, fg=TEXT, font=("Arial", 10, "bold")).grid(row=4, column=0, sticky="w", pady=(11, 3))
+        tk.Label(panel, text=tr("Сжатие"), bg=DROP_ZONE_BG, fg=TEXT, font=("Arial", 10, "bold")).grid(row=4, column=0, sticky="w", pady=(11, 3))
         options = (
-            ("medium", "Оптимальное"),
-            ("maximum", "Максимальное"),
+            ("medium", tr("Оптимальное")),
+            ("maximum", tr("Максимальное")),
         )
         self.compress_preset_buttons = []
         for row, (value, title) in enumerate(options, start=5):
@@ -2869,7 +2873,7 @@ class PdfCombinerApp(BaseTk):
             button.grid(row=row, column=0, sticky="w", pady=1)
             self.compress_preset_buttons.append(button)
         tk.Label(panel, textvariable=self.compress_estimate, bg=SURFACE_ALT, fg=DEEP_BLUE, wraplength=330, justify="left", padx=8, pady=4, font=("Arial", 9, "bold")).grid(row=8, column=0, sticky="ew", pady=(12, 0))
-        ttk.Button(panel, text="Сжать PDF", command=self._run_compress, style="Accent.TButton").grid(row=9, column=0, sticky="ew", pady=(12, 0))
+        ttk.Button(panel, text=tr("Сжать PDF"), command=self._run_compress, style="Accent.TButton").grid(row=9, column=0, sticky="ew", pady=(12, 0))
         self._update_compress_mode_controls()
         self._enable_drop(frame, self._handle_compress_drop)
         self._enable_drop(panel_shell, self._handle_compress_drop)
@@ -2887,32 +2891,64 @@ class PdfCombinerApp(BaseTk):
     @staticmethod
     def _format_file_size(size: int) -> str:
         if size < 1024 * 1024:
-            return f"{size / 1024:.1f} КБ"
-        return f"{size / (1024 * 1024):.2f} МБ"
+            return tr(f"{size / 1024:.1f} КБ")
+        return tr(f"{size / (1024 * 1024):.2f} МБ")
 
     def _update_compression_estimate(self) -> None:
         if not hasattr(self, "compress_estimate"):
             return
         paths = [Path(value) for value in self.compress_files if Path(value).is_file()]
         if not paths:
-            self.compress_estimate.set("Добавьте PDF")
+            self.compress_estimate.set(tr("Добавьте PDF"))
             return
         try:
             source_size = sum(path.stat().st_size for path in paths)
         except OSError:
-            self.compress_estimate.set("Исходный объём недоступен")
+            self.compress_estimate.set(tr("Исходный объём недоступен"))
             return
-        self.compress_estimate.set(f"Исходный объём: {self._format_file_size(source_size)}")
+        self.compress_estimate.set(tr(f"Исходный объём: {self._format_file_size(source_size)}"))
 
     def _about_tab(self, parent) -> ttk.Frame:
         frame = ttk.Frame(parent, padding=20, style="Panel.TFrame")
-        ttk.Label(frame, text=APP_TITLE, font=("Arial", 22, "bold")).pack(anchor="w")
-        ttk.Label(frame, text=f"Версия {__version__}").pack(anchor="w", pady=(8, 16))
-        ttk.Label(frame, text="Редактор PDF: страницы, текст, подписи, OCR, конвертация и сжатие.\nДокументы обрабатываются локально. Сбор и отправка статистики отсутствуют.",
-                  wraplength=700, justify="left").pack(anchor="w")
-        ttk.Button(frame, text="Открыть руководство пользователя", command=self._open_user_guide).pack(anchor="w", pady=16)
-        ttk.Button(frame, text="Собрать отладочную информацию", command=self._export_ocr_diagnostics).pack(anchor="w")
+        ttk.Style(self).configure("About.TLabel", background=PANEL, foreground=TEXT)
+        ttk.Label(frame, text=APP_TITLE, font=("Arial", 22, "bold"), style="About.TLabel").pack(anchor="w")
+        ttk.Label(frame, text=tr(f"Версия {__version__}"), style="About.TLabel").pack(anchor="w", pady=(8, 16))
+        ttk.Label(frame, text=tr("Редактор PDF: страницы, текст, подписи, OCR, конвертация и сжатие.\nДокументы обрабатываются локально. Сбор и отправка статистики отсутствуют."),
+                  wraplength=700, justify="left", style="About.TLabel").pack(anchor="w")
+        ttk.Button(frame, text=tr("Открыть руководство пользователя"), command=self._open_user_guide).pack(anchor="w", pady=16)
+        ttk.Button(frame, text=tr("Собрать отладочную информацию"), command=self._export_ocr_diagnostics).pack(anchor="w")
+        language_row = ttk.Frame(frame, style="Panel.TFrame")
+        language_row.pack(anchor="w", pady=(24, 8))
+        ttk.Label(language_row, text=tr("Язык интерфейса"), style="About.TLabel").pack(side="left", padx=(0, 10))
+        self.ui_language_options = (tr("Как в системе"), "Русский", "English")
+        self.ui_language_box = ttk.Combobox(language_row, values=self.ui_language_options,
+                                          state="readonly", width=22)
+        preference = self.preferences.get('ui_language', 'auto')
+        self.ui_language_box.current(('auto', 'ru', 'en').index(preference) if preference in {'auto', 'ru', 'en'} else 0)
+        self.ui_language_box.pack(side="left")
+        self.ui_language_box.bind('<<ComboboxSelected>>', self._change_ui_language)
+        ttk.Label(frame, text=tr("Изменение языка применяется после перезапуска программы."),
+                  wraplength=700, style="About.TLabel").pack(anchor="w")
+        ttk.Frame(frame, style="Panel.TFrame").pack(fill="both", expand=True)
+        ttk.Separator(frame).pack(fill="x", pady=(16, 12))
+        ttk.Label(frame, text=tr("Разработчик: Митинский А.А."), style="About.TLabel").pack(anchor="w")
+        ttk.Label(frame, text="andreymitinskii@gmail.com", style="About.TLabel").pack(anchor="w", pady=(4, 0))
         return frame
+
+    def _change_ui_language(self, _event=None) -> None:
+        selected = self.ui_language_box.current()
+        if selected not in (0, 1, 2):
+            return
+        old = self.preferences.get('ui_language', 'auto')
+        self.preferences['ui_language'] = ('auto', 'ru', 'en')[selected]
+        try:
+            save_preferences(self.preferences)
+        except OSError as error:
+            self.preferences['ui_language'] = old
+            self.ui_language_box.current(('auto', 'ru', 'en').index(old) if old in {'auto', 'ru', 'en'} else 0)
+            self._show_error(error)
+            return
+        self.status.set(tr("Язык сохранён. Перезапустите программу, чтобы применить изменение."))
 
     def _enable_drop(self, widget, handler=None) -> None:
         if not DND_FILES:
@@ -3031,7 +3067,7 @@ class PdfCombinerApp(BaseTk):
 
     def _open_user_guide(self) -> None:
         if not GUIDE_PATH.exists():
-            messagebox.showerror("Руководство", f"Файл руководства не найден:\n{GUIDE_PATH}")
+            messagebox.showerror(tr("Руководство"), tr(f"Файл руководства не найден:\n{GUIDE_PATH}"))
             return
         try:
             if os.name == "nt":
@@ -3039,7 +3075,7 @@ class PdfCombinerApp(BaseTk):
             else:
                 subprocess.Popen(["xdg-open", str(GUIDE_PATH)])
         except (OSError, subprocess.SubprocessError):
-            messagebox.showinfo("Руководство", f"Откройте PDF-файл:\n{GUIDE_PATH}")
+            messagebox.showinfo(tr("Руководство"), tr(f"Откройте PDF-файл:\n{GUIDE_PATH}"))
 
     def _bind_preference_traces(self) -> None:
         for variable in (
@@ -3191,10 +3227,10 @@ class PdfCombinerApp(BaseTk):
         if not has_recoverable_content(payload):
             return
         workspace_count = len(payload.get("workspace", []))
-        editor_text = " и несохранённые правки редактора" if payload.get("editor") else ""
+        editor_text = tr(" и несохранённые правки редактора") if payload.get("editor") else ""
         if not messagebox.askyesno(
-            "Восстановление работы",
-            f"Найдено автосохранение: страниц в разделе PDF — {workspace_count}{editor_text}.\n\nВосстановить предыдущую работу?",
+            tr("Восстановление работы"),
+            tr(f"Найдено автосохранение: страниц в разделе PDF — {workspace_count}{editor_text}.\n\nВосстановить предыдущую работу?"),
             parent=self,
         ):
             clear_recovery()
@@ -3319,7 +3355,7 @@ class PdfCombinerApp(BaseTk):
                     self._load_editor_pdf(restored)
                     self.editor_dirty = True
                     self.editor_new_document = True
-            self.status.set("Предыдущая работа восстановлена из автосохранения")
+            self.status.set(tr("Предыдущая работа восстановлена из автосохранения"))
         except Exception as exc:
             clear_recovery()
             self._show_error(exc)
@@ -3384,11 +3420,11 @@ class PdfCombinerApp(BaseTk):
                 self._delete_selected_editor_object()
             elif self.editor_recognized_text_selection:
                 self.editor_recognized_text_selection = None
-                self.status.set("Выделение распознанного текста снято")
+                self.status.set(tr("Выделение распознанного текста снято"))
                 self._render_editor_page()
             else:
                 self.editor_region_selection = None
-                self.status.set("Выделение области снято")
+                self.status.set(tr("Выделение области снято"))
                 self._render_editor_page()
             return "break"
         return None
@@ -3403,8 +3439,8 @@ class PdfCombinerApp(BaseTk):
         if not self.editor_dirty:
             return True
         return messagebox.askyesno(
-            "Несохранённые изменения",
-            "В PDF Редакторе есть несохранённые изменения. Закрыть документ без сохранения?",
+            tr("Несохранённые изменения"),
+            tr("В PDF Редакторе есть несохранённые изменения. Закрыть документ без сохранения?"),
             parent=self,
         )
 
@@ -3450,104 +3486,104 @@ class PdfCombinerApp(BaseTk):
 
     def _default_tooltip(self, widget, text: str) -> str:
         tips = {
-            "Открыть руководство пользователя": "Открыть подробную локальную инструкцию в формате PDF.",
-            "Добавить файлы": "Добавить PDF и изображения в общую рабочую область страниц.",
-            "Добавить PDF": "Выберите PDF-файлы. В разделах PDF и сжатия можно также перетаскивать файлы мышью.",
-            "Сохранить PDF": "Собрать все страницы рабочей области в новый PDF.",
-            "Печать": "Открыть параметры печати и отправить текущий PDF или документ редактора на выбранный принтер. Ctrl+P.",
-            "Сохранить документ": "Собрать все страницы в один новый PDF. Исходные файлы не меняются.",
-            "Сохранить выбранные": "Сохранить только выделенные страницы в отдельный PDF.",
-            "Удалить выбранные": "Убрать выбранные страницы из рабочей области без удаления исходных файлов.",
-            "Дублировать": "Создать копии выделенных страниц непосредственно рядом с оригиналами.",
-            "Повернуть влево": "Повернуть выбранные страницы на 90 градусов против часовой стрелки.",
-            "Повернуть вправо": "Повернуть выбранные страницы на 90 градусов по часовой стрелке.",
-            "↶ 90°": "Повернуть выделенные страницы на 90 градусов против часовой стрелки.",
-            "↷ 90°": "Повернуть выделенные страницы на 90 градусов по часовой стрелке.",
-            "Очистить": "Очистить список в текущем разделе.",
-            "Открыть": "Открыть PDF или изображение для визуального редактирования.",
-            "Новый лист": "Создать пустой PDF-лист A5, A4 или A3 и сразу открыть его в PDF Редакторе.",
-            "‹": "Перейти на предыдущую страницу PDF.",
-            "›": "Перейти на следующую страницу PDF.",
-            "Сохранить как…": "Выберите имя и формат: PDF, DOCX с распознанным текстом, PNG, JPG, WEBP, TIFF или BMP.",
-            "Добавить файл": "Добавить один или несколько PDF и изображений в рабочую область.",
-            "Выбор": "Выберите уже добавленный объект, чтобы переместить, изменить размер или удалить его.",
-            "Отменить": "Отменить последнее действие в PDF Редакторе.",
-            "Повторить": "Вернуть отменённое действие.",
-            "Удалить": "Удалить выбранный элемент из списка или выбранный объект редактора.",
-            "Копия": "Создать копию выбранного объекта и разместить её рядом.",
-            "Объект": "Операции с выбранным объектом и сброс всех правок.",
-            "↶": "Отменить последнее действие редактора.",
-            "↷": "Повторить отменённое действие редактора.",
-            "−": "Уменьшить масштаб просмотра.",
-            "+": "Увеличить масштаб просмотра.",
-            "Вписать": "Подогнать страницу или изображение под размер окна.",
-            "По ширине": "Установить масштаб так, чтобы страница заняла всю ширину области просмотра.",
-            "Страница": "Показать страницу целиком в доступной области просмотра.",
-            "100%": "Показать страницу в масштабе 100%.",
-            "Определить стиль": "Кликните по текстовому слою PDF, чтобы подобрать похожий шрифт, размер и цвет.",
-            "Определить стиль по клику": "Кликните по текстовому слою PDF, чтобы подобрать похожий шрифт, размер и цвет.",
-            "Текст": "Введите текст и щёлкните место вставки либо протяните рамку нужного размера.",
-            "Закрыть": "Закрыть выбранную область белым прямоугольником.",
-            "Копия области": "Выделить фрагмент страницы; для копирования нажмите Ctrl+C, для вставки — Ctrl+V.",
-            "Копировать область": "Выделить фрагмент страницы; для копирования нажмите Ctrl+C, для вставки — Ctrl+V.",
-            "Выделить область": "Обведите фрагмент страницы, затем нажмите Ctrl+C. Вставить его можно в другом окне pdf bars.",
-            "Карандаш": "Рисовать произвольные линии поверх страницы или изображения.",
-            "Ластик": "Рисовать белой линией, чтобы быстро закрывать мелкие элементы.",
-            "Обрезка": "Выделите рамкой область, которая останется после сохранения.",
-            "Обрезать": "Выделите рамкой область, которая останется после сохранения.",
-            "Выравнивание": "Автоматически определить наклон текста и при необходимости вручную поправить угол страницы.",
-            "Стиль": "Определить шрифт, размер и цвет по текстовому слою PDF.",
-            "Подпись": "Открыть локальную библиотеку подписей и отметок.",
-            "Разместить": "Разместить выбранную подпись или подготовленный текст.",
-            "Применить": "Применить параметры к выбранному текстовому объекту.",
-            "Сбросить правки": "Удалить все добавленные объекты редактора.",
-            "Применить к выбранному тексту": "Обновить текст, шрифт, размер и цвет выбранного текстового объекта.",
-            "Загрузить": "Добавить изображение подписи или отметки в локальную библиотеку.",
-            "Добавить файл…": "Импортировать изображение подписи или отметки в локальную библиотеку.",
-            "Открыть библиотеку": "Открыть сохранённые на этом компьютере подписи и отметки.",
-            "Автоматически удалять фон при импорте": "Сделать однородный фон прозрачным и обрезать пустые края изображения.",
-            "Разместить отметку": "Выберите сохранённую отметку и протяните рамку на документе.",
-            "Очистить все правки": "Удалить все добавленные объекты редактора в текущем файле.",
-            "Добавить изображения": "Выберите изображения для создания PDF. WEBP поддерживается.",
-            "Создавать отдельный PDF для каждого файла": "Создать для каждого выбранного изображения самостоятельный PDF.",
-            "Создать PDF": "Создать один PDF из изображений или отдельный PDF для каждого файла.",
-            "Преобразовать": "Выполнить преобразование с выбранными параметрами.",
-            "Добавить DOCX/DOC": "Добавить документы для преобразования через доступный Word, Р7/ONLYOFFICE, LibreOffice или OpenOffice.",
-            "Добавить документы": "Добавить DOCX или DOC для пакетного преобразования в PDF.",
-            "Преобразовать в PDF": "Пакетно создать PDF из выбранных DOCX/DOC.",
-            "Преобразовать в DOCX": f"Создать DOCX через {'Microsoft Word' if os.name == 'nt' else 'R7-Office'}. Включите предварительное распознавание для сканов.",
-            "Предварительно распознать текст": "Распознать каждую страницу целиком и создать DOCX с редактируемым текстом, абзацами и таблицами.",
-            "Сохранить графику": "Дополнительно перенести логотипы, линии, печати и другую графику. Отключите для чистого текстового DOCX.",
-            "Сохранить макет через R7-Office": f"Использовать {'Microsoft Word' if os.name == 'nt' else 'R7-Office'} для максимально возможного сохранения исходного оформления PDF.",
-            "Распознанный текст (OCR)": "Локально распознать русский и английский текст и создать редактируемый DOCX без зависимости от R7-Office.",
-            "По качеству": "Использовать один из трёх готовых профилей качества.",
-            "До размера": "Автоматически распределить указанный общий объём между всеми добавленными PDF.",
-            "Сжать PDF": "Сжать один или несколько PDF по профилю качества или до заданного размера.",
-            "Найти": "Найти слово или фразу в текстовом слое и автоматически распознать страницы без текста.",
-            "Распознать текст": "Подготавливает скан, распознаёт весь документ локально и позволяет искать, выделять и копировать текст.",
-            "Максимальное — для почты": "Наименьший читаемый файл; подходит для отправки по почте.",
-            "Среднее — баланс качества": "Умеренное уменьшение размера с хорошей читаемостью.",
-            "Минимальное — без потерь": "Оптимизировать структуру PDF без ухудшения изображений.",
-            "Копировать техническую информацию": "Скопировать сведения об ошибке, версии и системе для отправки разработчику.",
-            "Копировать отчёт": "Скопировать список обработанных файлов, размеры и пути сохранения.",
-            "Выбрать папку": "Указать папку для пакетного сохранения. Если не указана, файлы сохраняются рядом с исходными.",
-            "Выбрать папку…": "Указать папку для пакетного сохранения. Если не указана, файлы сохраняются рядом с исходными.",
-            "Папка…": "Указать папку результата. Пустое поле сохраняет файлы рядом с исходными.",
-            "Папка сохранения": "Выбрать папку для результата.",
-            "Выбрать…": "Выбрать исходный файл через стандартное окно открытия.",
-            "Очистить список": "Удалить все записи из текущего списка без удаления исходных файлов.",
+            tr("Открыть руководство пользователя"): tr("Открыть подробную локальную инструкцию в формате PDF."),
+            tr("Добавить файлы"): tr("Добавить PDF и изображения в общую рабочую область страниц."),
+            tr("Добавить PDF"): tr("Выберите PDF-файлы. В разделах PDF и сжатия можно также перетаскивать файлы мышью."),
+            tr("Сохранить PDF"): tr("Собрать все страницы рабочей области в новый PDF."),
+            tr("Печать"): tr("Открыть параметры печати и отправить текущий PDF или документ редактора на выбранный принтер. Ctrl+P."),
+            tr("Сохранить документ"): tr("Собрать все страницы в один новый PDF. Исходные файлы не меняются."),
+            tr("Сохранить выбранные"): tr("Сохранить только выделенные страницы в отдельный PDF."),
+            tr("Удалить выбранные"): tr("Убрать выбранные страницы из рабочей области без удаления исходных файлов."),
+            tr("Дублировать"): tr("Создать копии выделенных страниц непосредственно рядом с оригиналами."),
+            tr("Повернуть влево"): tr("Повернуть выбранные страницы на 90 градусов против часовой стрелки."),
+            tr("Повернуть вправо"): tr("Повернуть выбранные страницы на 90 градусов по часовой стрелке."),
+            "↶ 90°": tr("Повернуть выделенные страницы на 90 градусов против часовой стрелки."),
+            "↷ 90°": tr("Повернуть выделенные страницы на 90 градусов по часовой стрелке."),
+            tr("Очистить"): tr("Очистить список в текущем разделе."),
+            tr("Открыть"): tr("Открыть PDF или изображение для визуального редактирования."),
+            tr("Новый лист"): tr("Создать пустой PDF-лист A5, A4 или A3 и сразу открыть его в PDF Редакторе."),
+            "‹": tr("Перейти на предыдущую страницу PDF."),
+            "›": tr("Перейти на следующую страницу PDF."),
+            tr("Сохранить как…"): tr("Выберите имя и формат: PDF, DOCX с распознанным текстом, PNG, JPG, WEBP, TIFF или BMP."),
+            tr("Добавить файл"): tr("Добавить один или несколько PDF и изображений в рабочую область."),
+            tr("Выбор"): tr("Выберите уже добавленный объект, чтобы переместить, изменить размер или удалить его."),
+            tr("Отменить"): tr("Отменить последнее действие в PDF Редакторе."),
+            tr("Повторить"): tr("Вернуть отменённое действие."),
+            tr("Удалить"): tr("Удалить выбранный элемент из списка или выбранный объект редактора."),
+            tr("Копия"): tr("Создать копию выбранного объекта и разместить её рядом."),
+            tr("Объект"): tr("Операции с выбранным объектом и сброс всех правок."),
+            "↶": tr("Отменить последнее действие редактора."),
+            "↷": tr("Повторить отменённое действие редактора."),
+            "−": tr("Уменьшить масштаб просмотра."),
+            "+": tr("Увеличить масштаб просмотра."),
+            tr("Вписать"): tr("Подогнать страницу или изображение под размер окна."),
+            tr("По ширине"): tr("Установить масштаб так, чтобы страница заняла всю ширину области просмотра."),
+            tr("Страница"): tr("Показать страницу целиком в доступной области просмотра."),
+            "100%": tr("Показать страницу в масштабе 100%."),
+            tr("Определить стиль"): tr("Кликните по текстовому слою PDF, чтобы подобрать похожий шрифт, размер и цвет."),
+            tr("Определить стиль по клику"): tr("Кликните по текстовому слою PDF, чтобы подобрать похожий шрифт, размер и цвет."),
+            tr("Текст"): tr("Введите текст и щёлкните место вставки либо протяните рамку нужного размера."),
+            tr("Закрыть"): tr("Закрыть выбранную область белым прямоугольником."),
+            tr("Копия области"): tr("Выделить фрагмент страницы; для копирования нажмите Ctrl+C, для вставки — Ctrl+V."),
+            tr("Копировать область"): tr("Выделить фрагмент страницы; для копирования нажмите Ctrl+C, для вставки — Ctrl+V."),
+            tr("Выделить область"): tr("Обведите фрагмент страницы, затем нажмите Ctrl+C. Вставить его можно в другом окне pdf bars."),
+            tr("Карандаш"): tr("Рисовать произвольные линии поверх страницы или изображения."),
+            tr("Ластик"): tr("Рисовать белой линией, чтобы быстро закрывать мелкие элементы."),
+            tr("Обрезка"): tr("Выделите рамкой область, которая останется после сохранения."),
+            tr("Обрезать"): tr("Выделите рамкой область, которая останется после сохранения."),
+            tr("Выравнивание"): tr("Автоматически определить наклон текста и при необходимости вручную поправить угол страницы."),
+            tr("Стиль"): tr("Определить шрифт, размер и цвет по текстовому слою PDF."),
+            tr("Подпись"): tr("Открыть локальную библиотеку подписей и отметок."),
+            tr("Разместить"): tr("Разместить выбранную подпись или подготовленный текст."),
+            tr("Применить"): tr("Применить параметры к выбранному текстовому объекту."),
+            tr("Сбросить правки"): tr("Удалить все добавленные объекты редактора."),
+            tr("Применить к выбранному тексту"): tr("Обновить текст, шрифт, размер и цвет выбранного текстового объекта."),
+            tr("Загрузить"): tr("Добавить изображение подписи или отметки в локальную библиотеку."),
+            tr("Добавить файл…"): tr("Импортировать изображение подписи или отметки в локальную библиотеку."),
+            tr("Открыть библиотеку"): tr("Открыть сохранённые на этом компьютере подписи и отметки."),
+            tr("Автоматически удалять фон при импорте"): tr("Сделать однородный фон прозрачным и обрезать пустые края изображения."),
+            tr("Разместить отметку"): tr("Выберите сохранённую отметку и протяните рамку на документе."),
+            tr("Очистить все правки"): tr("Удалить все добавленные объекты редактора в текущем файле."),
+            tr("Добавить изображения"): tr("Выберите изображения для создания PDF. WEBP поддерживается."),
+            tr("Создавать отдельный PDF для каждого файла"): tr("Создать для каждого выбранного изображения самостоятельный PDF."),
+            tr("Создать PDF"): tr("Создать один PDF из изображений или отдельный PDF для каждого файла."),
+            tr("Преобразовать"): tr("Выполнить преобразование с выбранными параметрами."),
+            tr("Добавить DOCX/DOC"): tr("Добавить документы для преобразования через доступный Word, Р7/ONLYOFFICE, LibreOffice или OpenOffice."),
+            tr("Добавить документы"): tr("Добавить DOCX или DOC для пакетного преобразования в PDF."),
+            tr("Преобразовать в PDF"): tr("Пакетно создать PDF из выбранных DOCX/DOC."),
+            tr("Преобразовать в DOCX"): tr(f"Создать DOCX через {'Microsoft Word' if os.name == 'nt' else 'R7-Office'}. Включите предварительное распознавание для сканов."),
+            tr("Предварительно распознать текст"): tr("Распознать каждую страницу целиком и создать DOCX с редактируемым текстом, абзацами и таблицами."),
+            tr("Сохранить графику"): tr("Дополнительно перенести логотипы, линии, печати и другую графику. Отключите для чистого текстового DOCX."),
+            tr("Сохранить макет через R7-Office"): tr(f"Использовать {'Microsoft Word' if os.name == 'nt' else 'R7-Office'} для максимально возможного сохранения исходного оформления PDF."),
+            tr("Распознанный текст (OCR)"): tr("Локально распознать русский и английский текст и создать редактируемый DOCX без зависимости от R7-Office."),
+            tr("По качеству"): tr("Использовать один из трёх готовых профилей качества."),
+            tr("До размера"): tr("Автоматически распределить указанный общий объём между всеми добавленными PDF."),
+            tr("Сжать PDF"): tr("Сжать один или несколько PDF по профилю качества или до заданного размера."),
+            tr("Найти"): tr("Найти слово или фразу в текстовом слое и автоматически распознать страницы без текста."),
+            tr("Распознать текст"): tr("Подготавливает скан, распознаёт весь документ локально и позволяет искать, выделять и копировать текст."),
+            tr("Максимальное — для почты"): tr("Наименьший читаемый файл; подходит для отправки по почте."),
+            tr("Среднее — баланс качества"): tr("Умеренное уменьшение размера с хорошей читаемостью."),
+            tr("Минимальное — без потерь"): tr("Оптимизировать структуру PDF без ухудшения изображений."),
+            tr("Копировать техническую информацию"): tr("Скопировать сведения об ошибке, версии и системе для отправки разработчику."),
+            tr("Копировать отчёт"): tr("Скопировать список обработанных файлов, размеры и пути сохранения."),
+            tr("Выбрать папку"): tr("Указать папку для пакетного сохранения. Если не указана, файлы сохраняются рядом с исходными."),
+            tr("Выбрать папку…"): tr("Указать папку для пакетного сохранения. Если не указана, файлы сохраняются рядом с исходными."),
+            tr("Папка…"): tr("Указать папку результата. Пустое поле сохраняет файлы рядом с исходными."),
+            tr("Папка сохранения"): tr("Выбрать папку для результата."),
+            tr("Выбрать…"): tr("Выбрать исходный файл через стандартное окно открытия."),
+            tr("Очистить список"): tr("Удалить все записи из текущего списка без удаления исходных файлов."),
         }
         if text in tips:
             return tips[text]
         class_name = widget.winfo_class()
         if class_name in {"Listbox"}:
-            return "Список поддерживает выбор нескольких строк; файлы можно перетаскивать мышью."
+            return tr("Список поддерживает выбор нескольких строк; файлы можно перетаскивать мышью.")
         if class_name in {"TCombobox"}:
-            return "Выберите вариант из списка."
+            return tr("Выберите вариант из списка.")
         if class_name in {"TEntry", "Entry"}:
-            return "Поле можно заполнить вручную или через кнопку выбора рядом."
+            return tr("Поле можно заполнить вручную или через кнопку выбора рядом.")
         if text:
-            return f"Нажмите, чтобы выполнить действие: {text}"
+            return tr(f"Нажмите, чтобы выполнить действие: {text}")
         return ""
 
     def _handle_editor_drop(self, event) -> str:
@@ -3557,7 +3593,7 @@ class PdfCombinerApp(BaseTk):
         if supported:
             self._append_editor_files(supported)
         else:
-            self.status.set("В редактор можно перетащить PDF или изображение")
+            self.status.set(tr("В редактор можно перетащить PDF или изображение"))
         return "break"
 
     def _handle_pdf_docx_drop(self, event) -> str:
@@ -3573,7 +3609,7 @@ class PdfCombinerApp(BaseTk):
         if pdfs:
             self._append_compress_files(pdfs)
         else:
-            self.status.set("Для сжатия перетащите PDF-файлы")
+            self.status.set(tr("Для сжатия перетащите PDF-файлы"))
         return "break"
 
     def _handle_pdf_workspace_drop(self, event) -> str:
@@ -3588,9 +3624,9 @@ class PdfCombinerApp(BaseTk):
         pdfs = [path for path in files if path.suffix.lower() == ".pdf" and path.exists()]
         if pdfs:
             self.pdf_image_input.set(str(pdfs[0]))
-            self.status.set(f"Выбран для преобразования в изображения: {pdfs[0].name}")
+            self.status.set(tr(f"Выбран для преобразования в изображения: {pdfs[0].name}"))
         else:
-            self.status.set("Для преобразования в изображения перетащите PDF-файл")
+            self.status.set(tr("Для преобразования в изображения перетащите PDF-файл"))
         return "break"
 
     def _handle_images_drop(self, event) -> str:
@@ -3599,7 +3635,7 @@ class PdfCombinerApp(BaseTk):
         if files:
             self._append_images(files)
         else:
-            self.status.set("Для этого раздела перетащите изображения")
+            self.status.set(tr("Для этого раздела перетащите изображения"))
         return "break"
 
     def _handle_docx_drop(self, event) -> str:
@@ -3608,7 +3644,7 @@ class PdfCombinerApp(BaseTk):
         if files:
             self._append_docx(files)
         else:
-            self.status.set("Для этого раздела перетащите DOCX/DOC")
+            self.status.set(tr("Для этого раздела перетащите DOCX/DOC"))
         return "break"
 
     def _handle_drop(self, event) -> str:
@@ -3623,14 +3659,14 @@ class PdfCombinerApp(BaseTk):
         if docs:
             self._append_docx(docs)
         if not added and not docs:
-            self.status.set("Поддерживаются PDF, изображения, DOCX/DOC")
+            self.status.set(tr("Поддерживаются PDF, изображения, DOCX/DOC"))
         return "break"
 
     def _choose_pdf_files(self) -> None:
         files = filedialog.askopenfilenames(
             initialdir=self._dialog_initialdir(),
             filetypes=[
-                ("PDF и изображения", "*.pdf *.jpg *.jpeg *.png *.bmp *.gif *.tif *.tiff *.webp"),
+                (tr("PDF и изображения"), "*.pdf *.jpg *.jpeg *.png *.bmp *.gif *.tif *.tiff *.webp"),
                 ("PDF", "*.pdf"),
                 ("Images", "*.jpg *.jpeg *.png *.bmp *.gif *.tif *.tiff *.webp"),
             ]
@@ -3657,17 +3693,17 @@ class PdfCombinerApp(BaseTk):
             try:
                 reader = PdfReader(str(path))
                 if reader.is_encrypted:
-                    raise ValueError("PDF защищён паролем")
+                    raise ValueError(tr("PDF защищён паролем"))
                 count = len(reader.pages)
             except Exception as exc:
-                messagebox.showwarning("PDF", f"Не удалось открыть {path.name}: {exc}")
+                messagebox.showwarning("PDF", tr(f"Не удалось открыть {path.name}: {exc}"))
                 continue
             cached_source = snapshot_workspace_source(path)
             self.pages.extend(PageRef(path, index, count, cached_source=cached_source) for index in range(count))
             added += count
         if added:
             self._rebuild_page_grid()
-            self.status.set(f"Добавлено страниц: {added}")
+            self.status.set(tr(f"Добавлено страниц: {added}"))
         return added
 
     def _add_workspace_images(self, files) -> int:
@@ -3680,21 +3716,21 @@ class PdfCombinerApp(BaseTk):
                 with Image.open(path) as image:
                     image.verify()
             except Exception as exc:
-                messagebox.showwarning("Изображение", f"Не удалось открыть {path.name}: {exc}")
+                messagebox.showwarning(tr("Изображение"), tr(f"Не удалось открыть {path.name}: {exc}"))
                 continue
             cached_source = snapshot_workspace_source(path)
             self.pages.append(PageRef(path, 0, 1, cached_source=cached_source))
             added += 1
         if added:
             self._rebuild_page_grid()
-            self.status.set(f"Добавлено страниц/изображений: {added}")
+            self.status.set(tr(f"Добавлено страниц/изображений: {added}"))
         return added
 
     def _rebuild_page_grid(self) -> None:
         tracks_progress = len(self.pages) >= 4 and not self._global_progress_active
         if tracks_progress:
             self._start_global_progress(
-                f"Создание миниатюр: 0/{len(self.pages)}",
+                tr(f"Создание миниатюр: 0/{len(self.pages)}"),
                 determinate=True,
                 maximum=len(self.pages),
             )
@@ -3729,7 +3765,7 @@ class PdfCombinerApp(BaseTk):
                 self._update_global_progress(
                     index + 1,
                     len(self.pages),
-                    f"Создание миниатюр: {index + 1}/{len(self.pages)}",
+                    tr(f"Создание миниатюр: {index + 1}/{len(self.pages)}"),
                 )
         if tracks_progress:
             self._finish_global_progress()
@@ -3769,9 +3805,9 @@ class PdfCombinerApp(BaseTk):
     def _refresh_pdf_workspace_summary(self) -> None:
         selected_count = len(self.selected)
         self.pdf_workspace_summary.set(
-            f"Страниц: {len(self.pages)}" + (f" · Выбрано: {selected_count}" if selected_count else "")
+            tr(f"Страниц: {len(self.pages)}") + (tr(f" · Выбрано: {selected_count}") if selected_count else "")
             if self.pages
-            else "ⓘ  Рабочая область пуста"
+            else tr("ⓘ  Рабочая область пуста")
         )
         if hasattr(self, "drop_label"):
             if self.pages:
@@ -3821,7 +3857,7 @@ class PdfCombinerApp(BaseTk):
         canvas.create_text(
             center_x,
             center_y + 22,
-            text="Перетащите PDF или изображения",
+            text=tr("Перетащите PDF или изображения"),
             fill=TEXT,
             font=(FONT_FAMILY, 17, "bold"),
             tags="pdf_empty",
@@ -3829,7 +3865,7 @@ class PdfCombinerApp(BaseTk):
         canvas.create_text(
             center_x,
             center_y + 62,
-            text="Перетащите файлы сюда или нажмите «Добавить файл»\nдля выбора на компьютере",
+            text=tr("Перетащите файлы сюда или нажмите «Добавить файл»\nдля выбора на компьютере"),
             fill=MUTED,
             font=(FONT_FAMILY, 10),
             justify="center",
@@ -3871,11 +3907,11 @@ class PdfCombinerApp(BaseTk):
         if page_ref.label:
             label = f"{index + 1}. {page_ref.label}"
         elif self._is_image_ref(page_ref):
-            label = f"{index + 1}. {page_ref.source.name}\nизображение"
+            label = tr(f"{index + 1}. {page_ref.source.name}\nизображение")
         else:
-            label = f"{index + 1}. {page_ref.source.name}\nстр. {page_ref.page_index + 1}/{page_ref.page_count}"
+            label = tr(f"{index + 1}. {page_ref.source.name}\nстр. {page_ref.page_index + 1}/{page_ref.page_count}")
         if page_ref.rotation:
-            label += f"\nповорот {page_ref.rotation}°"
+            label += tr(f"\nповорот {page_ref.rotation}°")
         return label
 
     def _toggle_page(self, index: int, extend: bool = False, toggle: bool = False) -> None:
@@ -3898,7 +3934,7 @@ class PdfCombinerApp(BaseTk):
             self.selected.clear()
             self.last_selected_index = None
             self._reflow_page_tiles()
-            self.status.set("Выбор страниц снят")
+            self.status.set(tr("Выбор страниц снят"))
 
     def _is_shift_event(self, event) -> bool:
         return bool(getattr(event, "state", 0) & 0x0001)
@@ -3957,27 +3993,27 @@ class PdfCombinerApp(BaseTk):
             )
         self._reflow_page_tiles(flash_index=target)
         self._queue_autosave()
-        self.status.set("Порядок страниц изменён")
+        self.status.set(tr("Порядок страниц изменён"))
 
     def _rotate_selected_pages(self, degrees: int) -> None:
         if not self.selected:
-            messagebox.showinfo("PDF", "Выберите страницы для поворота")
+            messagebox.showinfo("PDF", tr("Выберите страницы для поворота"))
             return
         for index in list(self.selected):
             ref = self.pages[index]
             self.pages[index] = replace(ref, rotation=(ref.rotation + degrees) % 360)
         self._rebuild_page_grid()
-        self.status.set("Выбранные страницы повернуты")
+        self.status.set(tr("Выбранные страницы повернуты"))
 
     def _duplicate_selected_pages(self) -> None:
         if not self.selected:
-            messagebox.showinfo("PDF", "Выберите страницы для дублирования")
+            messagebox.showinfo("PDF", tr("Выберите страницы для дублирования"))
             return
         self.pages, duplicate_indexes = duplicate_selected_page_refs(self.pages, self.selected)
         self.selected = duplicate_indexes
         self.last_selected_index = max(duplicate_indexes) if duplicate_indexes else None
         self._rebuild_page_grid()
-        self.status.set(f"Создано копий страниц: {len(duplicate_indexes)}")
+        self.status.set(tr(f"Создано копий страниц: {len(duplicate_indexes)}"))
 
     def _show_page_context_menu(self, event, index: int) -> None:
         self._dismiss_pdf_context_menu()
@@ -3988,22 +4024,22 @@ class PdfCombinerApp(BaseTk):
             self._rebuild_page_grid()
         menu = tk.Menu(self, tearoff=False)
         menu.add_command(
-            label="Открыть в PDF Редакторе",
+            label=tr("Открыть в PDF Редакторе"),
             command=lambda selected_only=had_selection: self._send_pages_to_visual_editor(selected_only),
         )
-        menu.add_command(label="Сохранить выделенные страницы…", command=self._save_selected_pages)
-        menu.add_command(label="Печатать документ…", command=self._print_pdf_document)
-        menu.add_command(label="Печатать выделенные страницы…", command=self._print_selected_pdf_pages)
+        menu.add_command(label=tr("Сохранить выделенные страницы…"), command=self._save_selected_pages)
+        menu.add_command(label=tr("Печатать документ…"), command=self._print_pdf_document)
+        menu.add_command(label=tr("Печатать выделенные страницы…"), command=self._print_selected_pdf_pages)
         menu.add_separator()
-        menu.add_command(label="Дублировать выбранные", command=self._duplicate_selected_pages)
-        menu.add_command(label="Повернуть влево", command=lambda: self._rotate_selected_pages(-90))
-        menu.add_command(label="Повернуть вправо", command=lambda: self._rotate_selected_pages(90))
+        menu.add_command(label=tr("Дублировать выбранные"), command=self._duplicate_selected_pages)
+        menu.add_command(label=tr("Повернуть влево"), command=lambda: self._rotate_selected_pages(-90))
+        menu.add_command(label=tr("Повернуть вправо"), command=lambda: self._rotate_selected_pages(90))
         blank_menu = tk.Menu(menu, tearoff=False)
-        blank_menu.add_command(label="Перед выбранной", command=lambda: self._insert_blank_page(index))
-        blank_menu.add_command(label="После выбранной", command=lambda: self._insert_blank_page(index + 1))
-        menu.add_cascade(label="Вставить пустую страницу", menu=blank_menu)
+        blank_menu.add_command(label=tr("Перед выбранной"), command=lambda: self._insert_blank_page(index))
+        blank_menu.add_command(label=tr("После выбранной"), command=lambda: self._insert_blank_page(index + 1))
+        menu.add_cascade(label=tr("Вставить пустую страницу"), menu=blank_menu)
         menu.add_separator()
-        menu.add_command(label="Удалить выбранные", command=self._delete_selected_pages)
+        menu.add_command(label=tr("Удалить выбранные"), command=self._delete_selected_pages)
         self.pdf_context_menu = menu
         try:
             menu.tk_popup(event.x_root, event.y_root)
@@ -4015,11 +4051,11 @@ class PdfCombinerApp(BaseTk):
             return
         self._dismiss_pdf_context_menu()
         menu = tk.Menu(self, tearoff=False)
-        menu.add_command(label="Добавить пустую страницу…", command=lambda: self._insert_blank_page(len(self.pages)))
+        menu.add_command(label=tr("Добавить пустую страницу…"), command=lambda: self._insert_blank_page(len(self.pages)))
         if self.pages:
             menu.add_separator()
-            menu.add_command(label="Открыть в PDF Редакторе", command=self._send_pages_to_visual_editor)
-            menu.add_command(label="Печатать документ…", command=self._print_pdf_document)
+            menu.add_command(label=tr("Открыть в PDF Редакторе"), command=self._send_pages_to_visual_editor)
+            menu.add_command(label=tr("Печатать документ…"), command=self._print_pdf_document)
         self.pdf_context_menu = menu
         try:
             menu.tk_popup(event.x_root, event.y_root)
@@ -4036,13 +4072,13 @@ class PdfCombinerApp(BaseTk):
         except Exception as exc:
             self._show_error(exc)
             return
-        orientation_label = "книжная" if orientation == "portrait" else "альбомная"
+        orientation_label = tr("книжная") if orientation == "portrait" else tr("альбомная")
         index = max(0, min(index, len(self.pages)))
-        self.pages.insert(index, PageRef(source, 0, 1, label=f"Пустая страница · {page_size} · {orientation_label}"))
+        self.pages.insert(index, PageRef(source, 0, 1, label=tr(f"Пустая страница · {page_size} · {orientation_label}")))
         self.selected = {index}
         self.last_selected_index = index
         self._rebuild_page_grid()
-        self.status.set(f"Добавлена пустая страница {page_size}, {orientation_label}")
+        self.status.set(tr(f"Добавлена пустая страница {page_size}, {orientation_label}"))
 
     def _on_canvas_resize(self, event) -> None:
         self.page_canvas.itemconfigure(self.page_canvas_window, width=event.width)
@@ -4056,7 +4092,7 @@ class PdfCombinerApp(BaseTk):
 
     def _save_pdf_document(self) -> None:
         if not self.pages:
-            messagebox.showinfo("PDF", "Добавьте PDF-файлы или изображения")
+            messagebox.showinfo("PDF", tr("Добавьте PDF-файлы или изображения"))
             return
         default_output = self._default_pdf_output()
         selected = filedialog.asksaveasfilename(
@@ -4069,7 +4105,7 @@ class PdfCombinerApp(BaseTk):
             return
         output = Path(selected)
         self._remember_dialog_selection(output)
-        self._run_task(lambda: self._write_page_refs(self.pages, output), 'Документ сохранён')
+        self._run_task(lambda: self._write_page_refs(self.pages, output), tr('Документ сохранён'))
 
     def _print_current_section(self, _event=None) -> str:
         if getattr(self.notebook, "_current", None) is self.editor_tab:
@@ -4077,14 +4113,14 @@ class PdfCombinerApp(BaseTk):
         return "break"
 
     def _print_pdf_document(self) -> None:
-        self._print_page_refs(list(self.pages), "документ")
+        self._print_page_refs(list(self.pages), tr("документ"))
 
     def _print_selected_pdf_pages(self) -> None:
-        self._print_page_refs(self._selected_refs(), "выбранные-страницы")
+        self._print_page_refs(self._selected_refs(), tr("выбранные-страницы"))
 
     def _print_page_refs(self, refs: list[PageRef], label: str) -> None:
         if not refs:
-            messagebox.showinfo("Печать", "Добавьте документ или выберите страницы для печати")
+            messagebox.showinfo(tr("Печать"), tr("Добавьте документ или выберите страницы для печати"))
             return
         dialog = PrintDialog(self, len(refs))
         if not dialog.result:
@@ -4100,23 +4136,23 @@ class PdfCombinerApp(BaseTk):
                 if os.name != "nt":
                     remove_temporary_print_file(output)
 
-        self._run_task(print_job, 'Документ отправлен на печать')
+        self._run_task(print_job, tr('Документ отправлен на печать'))
 
     def _save_selected_pages(self) -> None:
         refs = self._selected_refs()
         if not refs:
-            messagebox.showinfo("PDF", "Выберите одну или несколько страниц")
+            messagebox.showinfo("PDF", tr("Выберите одну или несколько страниц"))
             return
         output = self._default_selected_output(refs)
         output = filedialog.asksaveasfilename(initialfile=output.name, initialdir=str(output.parent), defaultextension=".pdf", filetypes=[("PDF", "*.pdf")])
         if output:
             self._remember_dialog_selection(output)
-            self._run_task(lambda: self._write_page_refs(refs, Path(output)), 'Выбранные страницы сохранены')
+            self._run_task(lambda: self._write_page_refs(refs, Path(output)), tr('Выбранные страницы сохранены'))
 
     def _send_pages_to_visual_editor(self, selected_only: bool | None = None) -> None:
         refs = page_refs_for_editor(self.pages, self.selected, selected_only)
         if not refs:
-            messagebox.showinfo("PDF", "Сначала добавьте PDF или изображения")
+            messagebox.showinfo("PDF", tr("Сначала добавьте PDF или изображения"))
             return
         transfer_dir = app_cache_dir("editor-transfer")
         cleanup_cache_files(
@@ -4136,7 +4172,7 @@ class PdfCombinerApp(BaseTk):
             self.notebook.select(self.editor_tab)
             self._append_editor_files([path])
 
-        self._run_task(lambda: self._write_page_refs(refs, destination), 'Страницы переданы в PDF Редактор', on_success=open_in_editor)
+        self._run_task(lambda: self._write_page_refs(refs, destination), tr('Страницы переданы в PDF Редактор'), on_success=open_in_editor)
 
     def _delete_selected_pages(self) -> None:
         if not self.selected:
@@ -4145,7 +4181,7 @@ class PdfCombinerApp(BaseTk):
         self.selected.clear()
         self.last_selected_index = None
         self._rebuild_page_grid()
-        self.status.set("Выбранные страницы удалены из рабочей области")
+        self.status.set(tr("Выбранные страницы удалены из рабочей области"))
 
     def _clear_pdf_workspace(self) -> None:
         self.pages.clear()
@@ -4153,7 +4189,7 @@ class PdfCombinerApp(BaseTk):
         self.last_selected_index = None
         self.thumbnails.clear()
         self._rebuild_page_grid()
-        self.status.set("Рабочая область очищена")
+        self.status.set(tr("Рабочая область очищена"))
 
     def _write_page_refs(self, refs: list[PageRef], output: Path) -> Path:
         resolved_sources: dict[PageRef, Path] = {}
@@ -4224,10 +4260,10 @@ class PdfCombinerApp(BaseTk):
                 if hasattr(self, "image_list"):
                     self.image_list.insert(tk.END, file_path)
                 added += 1
-        self.image_files_summary.set(f"Файлов: {len(self.image_files)}" if self.image_files else "Файлы не добавлены")
+        self.image_files_summary.set(tr(f"Файлов: {len(self.image_files)}") if self.image_files else tr("Файлы не добавлены"))
         self._sync_file_drop_states()
         if added:
-            self.status.set(f"Добавлено изображений: {added}")
+            self.status.set(tr(f"Добавлено изображений: {added}"))
 
     def _append_docx(self, files: list[str]) -> None:
         added = 0
@@ -4237,10 +4273,10 @@ class PdfCombinerApp(BaseTk):
                 if hasattr(self, "docx_list"):
                     self.docx_list.insert(tk.END, file_path)
                 added += 1
-        self.docx_files_summary.set(f"Файлов: {len(self.docx_files)}" if self.docx_files else "Файлы не добавлены")
+        self.docx_files_summary.set(tr(f"Файлов: {len(self.docx_files)}") if self.docx_files else tr("Файлы не добавлены"))
         self._sync_file_drop_states()
         if added:
-            self.status.set(f"Добавлено документов: {added}")
+            self.status.set(tr(f"Добавлено документов: {added}"))
 
     def _append_pdf_docx(self, files: list[str]) -> None:
         added = 0
@@ -4252,10 +4288,10 @@ class PdfCombinerApp(BaseTk):
                 if hasattr(self, "pdf_docx_list"):
                     self.pdf_docx_list.insert(tk.END, value)
                 added += 1
-        self.pdf_docx_files_summary.set(f"Файлов: {len(self.pdf_docx_files)}" if self.pdf_docx_files else "Файлы не добавлены")
+        self.pdf_docx_files_summary.set(tr(f"Файлов: {len(self.pdf_docx_files)}") if self.pdf_docx_files else tr("Файлы не добавлены"))
         self._sync_file_drop_states()
         if added:
-            self.status.set(f"Добавлено PDF: {added}")
+            self.status.set(tr(f"Добавлено PDF: {added}"))
 
     def _append_compress_files(self, files: list[str]) -> None:
         added = 0
@@ -4270,8 +4306,8 @@ class PdfCombinerApp(BaseTk):
                     self.compress_list.insert(tk.END, value)
                 added += 1
         if added:
-            self.status.set(f"Добавлено PDF для сжатия: {added}")
-        self.compress_files_summary.set(f"Файлов: {len(self.compress_files)}" if self.compress_files else "Файлы не добавлены")
+            self.status.set(tr(f"Добавлено PDF для сжатия: {added}"))
+        self.compress_files_summary.set(tr(f"Файлов: {len(self.compress_files)}") if self.compress_files else tr("Файлы не добавлены"))
         self._sync_file_drop_states()
         self._update_compression_estimate()
 
@@ -4284,12 +4320,12 @@ class PdfCombinerApp(BaseTk):
         for index in reversed(self.image_list.curselection()):
             self.image_list.delete(index)
             del self.image_files[index]
-        self.image_files_summary.set(f"Файлов: {len(self.image_files)}" if self.image_files else "Файлы не добавлены")
+        self.image_files_summary.set(tr(f"Файлов: {len(self.image_files)}") if self.image_files else tr("Файлы не добавлены"))
         self._sync_file_drop_states()
 
     def _run_images(self) -> None:
         if not self.image_files:
-            messagebox.showinfo("Изображения", "Добавьте изображения")
+            messagebox.showinfo(tr("Изображения"), tr("Добавьте изображения"))
             return
         sources = [str(Path(value).expanduser()) for value in self.image_files]
         one_per_file = self.image_one_per_file.get()
@@ -4317,15 +4353,15 @@ class PdfCombinerApp(BaseTk):
                 return images_to_individual_pdfs(sources, output_dir or first_dir, dpi)
             return images_to_pdf(sources, output_file or (first_dir / "images.pdf"), dpi)
 
-        self._run_task(task, 'PDF из изображений создан', source_paths=list(self.image_files))
+        self._run_task(task, tr('PDF из изображений создан'), source_paths=list(self.image_files))
 
     def _run_pdf_to_images(self) -> None:
         input_path = Path(self.pdf_image_input.get().strip())
         if not input_path.exists():
-            messagebox.showinfo("PDF в изображения", "Выберите PDF")
+            messagebox.showinfo(tr("PDF в изображения"), tr("Выберите PDF"))
             return
         output_dir = Path(self.pdf_image_output_dir.get().strip()) if self.pdf_image_output_dir.get().strip() else input_path.parent
-        self._run_task(lambda: pdf_to_images(input_path, output_dir, self.pdf_image_format.get(), self.pdf_image_dpi.get()), 'PDF преобразован в изображения', source_paths=[input_path])
+        self._run_task(lambda: pdf_to_images(input_path, output_dir, self.pdf_image_format.get(), self.pdf_image_dpi.get()), tr('PDF преобразован в изображения'), source_paths=[input_path])
 
     def _add_docx_files(self) -> None:
         files = filedialog.askopenfilenames(initialdir=self._dialog_initialdir(), filetypes=[("Word documents", "*.docx *.doc")])
@@ -4336,7 +4372,7 @@ class PdfCombinerApp(BaseTk):
         for index in reversed(self.docx_list.curselection()):
             self.docx_list.delete(index)
             del self.docx_files[index]
-        self.docx_files_summary.set(f"Файлов: {len(self.docx_files)}" if self.docx_files else "Файлы не добавлены")
+        self.docx_files_summary.set(tr(f"Файлов: {len(self.docx_files)}") if self.docx_files else tr("Файлы не добавлены"))
         self._sync_file_drop_states()
 
     def _add_pdf_docx_files(self) -> None:
@@ -4348,7 +4384,7 @@ class PdfCombinerApp(BaseTk):
         for index in reversed(self.pdf_docx_list.curselection()):
             self.pdf_docx_list.delete(index)
             del self.pdf_docx_files[index]
-        self.pdf_docx_files_summary.set(f"Файлов: {len(self.pdf_docx_files)}" if self.pdf_docx_files else "Файлы не добавлены")
+        self.pdf_docx_files_summary.set(tr(f"Файлов: {len(self.pdf_docx_files)}") if self.pdf_docx_files else tr("Файлы не добавлены"))
         self._sync_file_drop_states()
 
     def _add_compress_files(self) -> None:
@@ -4360,7 +4396,7 @@ class PdfCombinerApp(BaseTk):
         for index in reversed(self.compress_list.curselection()):
             self.compress_list.delete(index)
             del self.compress_files[index]
-        self.compress_files_summary.set(f"Файлов: {len(self.compress_files)}" if self.compress_files else "Файлы не добавлены")
+        self.compress_files_summary.set(tr(f"Файлов: {len(self.compress_files)}") if self.compress_files else tr("Файлы не добавлены"))
         self._sync_file_drop_states()
         self._update_compression_estimate()
 
@@ -4368,9 +4404,9 @@ class PdfCombinerApp(BaseTk):
         self.compress_files.clear()
         if hasattr(self, "compress_list"):
             self.compress_list.delete(0, tk.END)
-        self.compress_files_summary.set("Файлы не добавлены")
+        self.compress_files_summary.set(tr("Файлы не добавлены"))
         self._sync_file_drop_states()
-        self.status.set("Список сжатия очищен")
+        self.status.set(tr("Список сжатия очищен"))
         self._update_compression_estimate()
 
     def _start_documents_progress(self, text: str) -> None:
@@ -4393,33 +4429,33 @@ class PdfCombinerApp(BaseTk):
     def _finish_documents_progress(self) -> None:
         maximum = max(1.0, float(self.documents_progress_bar.cget("maximum")))
         self.documents_progress_value.set(maximum)
-        self.documents_progress_text.set("Преобразование завершено")
+        self.documents_progress_text.set(tr("Преобразование завершено"))
         self._finish_global_progress()
         self.docx_convert_button.configure(state="normal")
         self.pdf_docx_convert_button.configure(state="normal")
 
     def _run_docx(self) -> None:
         if not self.docx_files:
-            messagebox.showinfo("DOCX", "Добавьте DOCX/DOC")
+            messagebox.showinfo("DOCX", tr("Добавьте DOCX/DOC"))
             return
         output_dir = Path(self.docx_output_dir.get().strip()) if self.docx_output_dir.get().strip() else Path(self.docx_files[0]).parent
-        self._start_documents_progress("Подготовка DOCX / DOC")
-        self._run_task(lambda: docx_to_pdf(self.docx_files, output_dir, progress=self._update_documents_progress), 'DOCX сконвертированы', source_paths=list(self.docx_files), on_complete=self._finish_documents_progress)
+        self._start_documents_progress(tr("Подготовка DOCX / DOC"))
+        self._run_task(lambda: docx_to_pdf(self.docx_files, output_dir, progress=self._update_documents_progress), tr('DOCX сконвертированы'), source_paths=list(self.docx_files), on_complete=self._finish_documents_progress)
 
     def _run_pdf_docx(self) -> None:
         if not self.pdf_docx_files:
-            messagebox.showinfo("PDF в DOCX", "Добавьте PDF")
+            messagebox.showinfo(tr("PDF в DOCX"), tr("Добавьте PDF"))
             return
         output_dir = Path(self.pdf_docx_output_dir.get().strip()) if self.pdf_docx_output_dir.get().strip() else Path(self.pdf_docx_files[0]).parent
-        self._start_documents_progress("Подготовка PDF")
+        self._start_documents_progress(tr("Подготовка PDF"))
         if self.pdf_docx_pre_ocr.get():
-            self._run_task(lambda: pdfs_to_layout_ocr_docx(self.pdf_docx_files, output_dir, language=self.pdf_docx_ocr_language.get(), preserve_graphics=self.pdf_docx_preserve_graphics.get(), detect_tables=self.pdf_docx_detect_tables.get(), progress=self._update_documents_progress), 'Распознанный текст сохранён в DOCX', source_paths=list(self.pdf_docx_files), on_complete=self._finish_documents_progress)
+            self._run_task(lambda: pdfs_to_layout_ocr_docx(self.pdf_docx_files, output_dir, language=self.pdf_docx_ocr_language.get(), preserve_graphics=self.pdf_docx_preserve_graphics.get(), detect_tables=self.pdf_docx_detect_tables.get(), progress=self._update_documents_progress), tr('Распознанный текст сохранён в DOCX'), source_paths=list(self.pdf_docx_files), on_complete=self._finish_documents_progress)
             return
-        self._run_task(lambda: pdf_to_docx(self.pdf_docx_files, output_dir, progress=self._update_documents_progress), f"PDF преобразованы в DOCX через {('Microsoft Word' if os.name == 'nt' else 'R7-Office')}", source_paths=list(self.pdf_docx_files), on_complete=self._finish_documents_progress)
+        self._run_task(lambda: pdf_to_docx(self.pdf_docx_files, output_dir, progress=self._update_documents_progress), tr(f"PDF преобразованы в DOCX через {('Microsoft Word' if os.name == 'nt' else 'R7-Office')}"), source_paths=list(self.pdf_docx_files), on_complete=self._finish_documents_progress)
 
     def _run_compress(self) -> None:
         if not self.compress_files:
-            messagebox.showinfo("Сжатие", "Добавьте PDF для сжатия")
+            messagebox.showinfo(tr("Сжатие"), tr("Добавьте PDF для сжатия"))
             return
         preset = self.compress_preset.get()
         color_mode = "color"
@@ -4438,11 +4474,11 @@ class PdfCombinerApp(BaseTk):
                 return
             output = Path(selected)
             self._remember_dialog_selection(output)
-            self._run_task(lambda: compress_pdf_preset(input_path, output, preset, color_mode), 'Сжатие завершено', source_paths=sources, on_success=lambda result: self._show_compression_result(sources, [result]), quiet=True)
+            self._run_task(lambda: compress_pdf_preset(input_path, output, preset, color_mode), tr('Сжатие завершено'), source_paths=sources, on_success=lambda result: self._show_compression_result(sources, [result]), quiet=True)
             return
 
         output_dir = Path(output_dir_value) if output_dir_value else None
-        self._run_task(lambda: self._compress_files_batch(output_dir, preset, color_mode, input_paths=sources), 'Сжатие завершено', source_paths=sources, on_success=lambda result: self._show_compression_result(sources, result), quiet=True)
+        self._run_task(lambda: self._compress_files_batch(output_dir, preset, color_mode, input_paths=sources), tr('Сжатие завершено'), source_paths=sources, on_success=lambda result: self._show_compression_result(sources, result), quiet=True)
 
     def _compress_files_batch(
         self,
@@ -4471,12 +4507,12 @@ class PdfCombinerApp(BaseTk):
         unchanged = [source.name for source, output in zip(sources, outputs)
                      if Path(output).stat().st_size >= source.stat().st_size]
         note = ""
-        title = "Сжатие завершено"
+        title = tr("Сжатие завершено")
         if unchanged:
-            title = "Сжатие завершено с предупреждением"
-            note = ("Выбранный режим не уменьшил размер следующих файлов: " + ", ".join(unchanged) +
-                    ". Дальнейшее сжатие этими настройками невозможно; сохранены копии исходных файлов "
-                    "без ухудшения качества.")
+            title = tr("Сжатие завершено с предупреждением")
+            note = (tr("Выбранный режим не уменьшил размер следующих файлов: ") + ", ".join(unchanged) +
+                    tr(". Дальнейшее сжатие этими настройками невозможно; сохранены копии исходных файлов "
+                    "без ухудшения качества."))
         self.status.set(title)
         self._show_batch_report(sources, [Path(output) for output in outputs], title, note)
 
@@ -4493,9 +4529,9 @@ class PdfCombinerApp(BaseTk):
         self._background_task_count = getattr(self, "_background_task_count", 0) + 1
         owns_progress = not self._global_progress_active
         if owns_progress:
-            self._start_global_progress("Выполняется…")
+            self._start_global_progress(tr("Выполняется…"))
         else:
-            self.status.set("Выполняется…")
+            self.status.set(tr("Выполняется…"))
         sources = [Path(value) for value in (source_paths or [])]
         started_at = time.perf_counter()
 
@@ -4542,22 +4578,22 @@ class PdfCombinerApp(BaseTk):
     def _show_error(self, exc: Exception, technical_details: str | None = None) -> None:
         notice = user_notice(exc)
         if notice is not None:
-            self.status.set("Запись в выбранную папку невозможна" if is_permission_denied(exc) else notice.title)
+            self.status.set(tr("Запись в выбранную папку невозможна") if is_permission_denied(exc) else notice.title)
             messagebox.showwarning(notice.title, str(notice), parent=self)
             return
-        self.status.set("Ошибка")
+        self.status.set(tr("Ошибка"))
         trace_text = technical_details or traceback.format_exc()
         if trace_text.strip() == "NoneType: None":
-            trace_text = "Техническая трассировка недоступна."
+            trace_text = tr("Техническая трассировка недоступна.")
         details = (
-            f"pdf bars {__version__}\n"
+            tr(f"pdf bars {__version__}\n"
             f"Python {platform.python_version()}\n"
             f"Система: {platform.platform()}\n"
             f"Ошибка: {type(exc).__name__}: {exc}\n\n"
-            f"{trace_text}"
+            f"{trace_text}")
         )
         window = tk.Toplevel(self)
-        window.title("Ошибка")
+        window.title(tr("Ошибка"))
         window.geometry("700x430")
         window.minsize(540, 320)
         window.transient(self)
@@ -4580,35 +4616,35 @@ class PdfCombinerApp(BaseTk):
         text.configure(state="disabled")
         buttons = tk.Frame(window, bg=BG)
         buttons.grid(row=2, column=0, sticky="ew", padx=18, pady=14)
-        ttk.Button(buttons, text="Копировать техническую информацию", command=lambda: self._copy_text(details)).pack(side="left")
-        ttk.Button(buttons, text="Закрыть", command=window.destroy, style="Accent.TButton").pack(side="right")
+        ttk.Button(buttons, text=tr("Копировать техническую информацию"), command=lambda: self._copy_text(details)).pack(side="left")
+        ttk.Button(buttons, text=tr("Закрыть"), command=window.destroy, style="Accent.TButton").pack(side="right")
         self._install_tooltips()
 
     def _copy_text(self, value: str) -> None:
         self.clipboard_clear()
         self.clipboard_append(value)
         self.update_idletasks()
-        self.status.set("Техническая информация скопирована")
+        self.status.set(tr("Техническая информация скопирована"))
 
     def _show_success(self, result, message: str, source_paths: list[Path] | None = None) -> None:
         sources = source_paths or []
         if isinstance(result, TargetCompressionResult):
             if sources:
-                self.status.set("PDF сжат" if result.achieved else "Сжатие завершено, лимит не достигнут")
-                note = "" if result.achieved else "Заданный размер недостижим без дальнейшего ухудшения читаемости."
+                self.status.set(tr("PDF сжат") if result.achieved else tr("Сжатие завершено, лимит не достигнут"))
+                note = "" if result.achieved else tr("Заданный размер недостижим без дальнейшего ухудшения читаемости.")
                 self._show_batch_report(sources, [result.path], message, note)
             else:
                 self._show_target_compression_result(result)
             return
         if isinstance(result, BatchTargetCompressionResult):
             if result.achieved:
-                self.status.set("PDF сжаты до общего заданного размера")
-                note = f"Общий лимит: {result.target_mb:.2f} МБ · результат: {result.actual_mb:.2f} МБ"
+                self.status.set(tr("PDF сжаты до общего заданного размера"))
+                note = tr(f"Общий лимит: {result.target_mb:.2f} МБ · результат: {result.actual_mb:.2f} МБ")
             else:
-                self.status.set("Сжатие завершено, общий лимит не достигнут")
+                self.status.set(tr("Сжатие завершено, общий лимит не достигнут"))
                 note = (
-                    f"Общий лимит: {result.target_mb:.2f} МБ · результат: {result.actual_mb:.2f} МБ. "
-                    "Сохранены самые компактные читаемые варианты."
+                    tr(f"Общий лимит: {result.target_mb:.2f} МБ · результат: {result.actual_mb:.2f} МБ. "
+                    "Сохранены самые компактные читаемые варианты.")
                 )
             self._show_batch_report(sources, [item.path for item in result.results], message, note)
             return
@@ -4617,29 +4653,29 @@ class PdfCombinerApp(BaseTk):
             if target_results:
                 achieved = sum(item.achieved for item in target_results)
                 missed = len(target_results) - achieved
-                self.status.set("Сжатие завершено" if not missed else "Сжатие завершено с предупреждениями")
-                note = f"В заданный размер уложились: {achieved} из {len(target_results)}"
+                self.status.set(tr("Сжатие завершено") if not missed else tr("Сжатие завершено с предупреждениями"))
+                note = tr(f"В заданный размер уложились: {achieved} из {len(target_results)}")
                 if missed:
-                    note += ". Для остальных файлов сохранён самый компактный читаемый вариант."
+                    note += tr(". Для остальных файлов сохранён самый компактный читаемый вариант.")
                 self._show_batch_report(sources, [item.path for item in target_results], message, note)
                 return
             self.status.set(message)
             if sources:
                 self._show_batch_report(sources, [Path(item) for item in result], message)
             else:
-                messagebox.showinfo("Готово", f"{message}\nСоздано файлов: {len(result)}")
+                messagebox.showinfo(tr("Готово"), tr(f"{message}\nСоздано файлов: {len(result)}"))
         else:
             self.status.set(message)
             outputs = [Path(result)] if isinstance(result, (str, os.PathLike)) else []
             if sources and outputs:
                 self._show_batch_report(sources, outputs, message)
             else:
-                messagebox.showinfo("Готово", f"{message}\n{result}")
+                messagebox.showinfo(tr("Готово"), f"{message}\n{result}")
 
     def _show_batch_report(self, source_paths: list[Path], output_paths: list[Path], title: str, note: str = "") -> None:
         sources = [Path(path) for path in source_paths]
         outputs = [Path(path) for path in output_paths]
-        lines = [title, f"Обработано результатов: {len(outputs)}"]
+        lines = [title, tr(f"Обработано результатов: {len(outputs)}")]
         if note:
             lines.append(note)
         lines.append("")
@@ -4655,10 +4691,10 @@ class PdfCombinerApp(BaseTk):
             output_size = output.stat().st_size if output.exists() else 0
             lines.extend(
                 (
-                    f"Исходные файлы: {source_text}",
-                    f"Исходный объём: {self._format_file_size(source_size)}",
-                    f"Результат: {output}",
-                    f"Новый размер: {self._format_file_size(output_size)}",
+                    tr(f"Исходные файлы: {source_text}"),
+                    tr(f"Исходный объём: {self._format_file_size(source_size)}"),
+                    tr(f"Результат: {output}"),
+                    tr(f"Новый размер: {self._format_file_size(output_size)}"),
                 )
             )
             pairs = []
@@ -4669,19 +4705,19 @@ class PdfCombinerApp(BaseTk):
             source_size = source.stat().st_size if source is not None and source.exists() else 0
             output_size = output.stat().st_size if output.exists() else 0
             saved = source_size - output_size
-            lines.append(f"{index}. {source.name if source else 'Результат'}")
+            lines.append(f"{index}. {source.name if source else tr('Результат')}")
             if source_size:
-                lines.append(f"   Исходный размер: {self._format_file_size(source_size)}")
-            lines.append(f"   Новый размер: {self._format_file_size(output_size)}")
+                lines.append(tr(f"   Исходный размер: {self._format_file_size(source_size)}"))
+            lines.append(tr(f"   Новый размер: {self._format_file_size(output_size)}"))
             if source_size:
                 percent = saved / source_size * 100.0
-                lines.append(f"   Изменение: {percent:+.1f}%")
-            lines.append(f"   Сохранено: {output}")
+                lines.append(tr(f"   Изменение: {percent:+.1f}%"))
+            lines.append(tr(f"   Сохранено: {output}"))
             lines.append("")
 
         report = "\n".join(lines).rstrip()
         window = tk.Toplevel(self)
-        window.title("Отчёт обработки")
+        window.title(tr("Отчёт обработки"))
         window.geometry("760x520")
         window.minsize(560, 340)
         window.transient(self)
@@ -4702,24 +4738,24 @@ class PdfCombinerApp(BaseTk):
         text.configure(state="disabled")
         buttons = tk.Frame(window, bg=BG)
         buttons.grid(row=2, column=0, sticky="ew", padx=18, pady=14)
-        ttk.Button(buttons, text="Копировать отчёт", command=lambda: self._copy_text(report)).pack(side="left")
-        ttk.Button(buttons, text="Закрыть", command=window.destroy, style="Accent.TButton").pack(side="right")
+        ttk.Button(buttons, text=tr("Копировать отчёт"), command=lambda: self._copy_text(report)).pack(side="left")
+        ttk.Button(buttons, text=tr("Закрыть"), command=window.destroy, style="Accent.TButton").pack(side="right")
         self._install_tooltips()
 
     def _show_target_compression_result(self, result: TargetCompressionResult) -> None:
         details = (
-            f"Целевой размер: {result.target_mb:.2f} МБ\n"
+            tr(f"Целевой размер: {result.target_mb:.2f} МБ\n"
             f"Фактический размер: {result.actual_mb:.2f} МБ\n"
-            f"Файл: {result.path}"
+            f"Файл: {result.path}")
         )
         if result.achieved:
-            self.status.set("PDF сжат до заданного размера")
-            messagebox.showinfo("Готово", details)
+            self.status.set(tr("PDF сжат до заданного размера"))
+            messagebox.showinfo(tr("Готово"), details)
         else:
-            self.status.set("Сжатие завершено, лимит не достигнут")
+            self.status.set(tr("Сжатие завершено, лимит не достигнут"))
             messagebox.showwarning(
-                "Минимальный читаемый размер",
-                f"{details}\n\nЗаданный объём недостижим с доступными настройками без дальнейшего ухудшения читаемости.",
+                tr("Минимальный читаемый размер"),
+                tr(f"{details}\n\nЗаданный объём недостижим с доступными настройками без дальнейшего ухудшения читаемости."),
             )
 
 
@@ -4727,9 +4763,9 @@ class PdfCombinerApp(BaseTk):
         values = filedialog.askopenfilenames(
             initialdir=self._dialog_initialdir(),
             filetypes=[
-                ("PDF и изображения", "*.pdf *.jpg *.jpeg *.png *.bmp *.gif *.tif *.tiff *.webp"),
+                (tr("PDF и изображения"), "*.pdf *.jpg *.jpeg *.png *.bmp *.gif *.tif *.tiff *.webp"),
                 ("PDF", "*.pdf"),
-                ("Изображения", "*.jpg *.jpeg *.png *.bmp *.gif *.tif *.tiff *.webp"),
+                (tr("Изображения"), "*.jpg *.jpeg *.png *.bmp *.gif *.tif *.tiff *.webp"),
             ]
         )
         if values:
@@ -4755,13 +4791,13 @@ class PdfCombinerApp(BaseTk):
         self._load_editor_pdf(source)
         if self.editor_pdf_path != source:
             return
-        self.editor_page_source_names = ["Пустая страница"]
+        self.editor_page_source_names = [tr("Пустая страница")]
         self.editor_new_document = True
         self.editor_last_save_path = None
         self.editor_dirty = True
         self.editor_warning.set("")
-        orientation_label = "книжная" if orientation == "portrait" else "альбомная"
-        self.status.set(f"Создан новый лист {page_size}, {orientation_label}. Сохраните его под нужным именем.")
+        orientation_label = tr("книжная") if orientation == "portrait" else tr("альбомная")
+        self.status.set(tr(f"Создан новый лист {page_size}, {orientation_label}. Сохраните его под нужным именем."))
         self._queue_autosave()
 
     def _load_editor_file(self, path: Path) -> None:
@@ -4780,7 +4816,7 @@ class PdfCombinerApp(BaseTk):
         elif suffix in IMAGE_SUFFIXES:
             self._load_editor_image(path)
         else:
-            messagebox.showinfo("PDF Редактор", "Поддерживаются PDF и основные форматы изображений")
+            messagebox.showinfo(tr("PDF Редактор"), tr("Поддерживаются PDF и основные форматы изображений"))
         if self.editor_pdf_path == path or self.editor_pdf_path != previous:
             self.editor_page_source_names = [original_name] * self.editor_page_count
 
@@ -4797,7 +4833,7 @@ class PdfCombinerApp(BaseTk):
 
     def _append_editor_files(self, paths: list[Path]) -> None:
         if self.editor_pages_busy or self.editor_index_busy:
-            self.status.set("Дождитесь завершения текущей операции")
+            self.status.set(tr("Дождитесь завершения текущей операции"))
             return
         supported = [
             Path(path).expanduser()
@@ -4805,7 +4841,7 @@ class PdfCombinerApp(BaseTk):
             if Path(path).suffix.lower() == ".pdf" or Path(path).suffix.lower() in IMAGE_SUFFIXES
         ]
         if not supported:
-            self.status.set("В редактор можно добавить PDF или изображение")
+            self.status.set(tr("В редактор можно добавить PDF или изображение"))
             return
         try:
             supported = [input_path(path) for path in supported]
@@ -4873,11 +4909,11 @@ class PdfCombinerApp(BaseTk):
                 self.editor_last_save_path = None
                 self._queue_autosave()
             self.status.set(
-                f"Добавлено файлов: {len(supported)}; страниц в документе: {self.editor_page_count}"
+                tr(f"Добавлено файлов: {len(supported)}; страниц в документе: {self.editor_page_count}")
             )
 
         self.editor_pages_busy = True
-        self._run_task(combine, 'Файлы добавлены в PDF Редактор', source_paths=source_paths, on_success=added, on_complete=lambda: setattr(self, 'editor_pages_busy', False), quiet=True)
+        self._run_task(combine, tr('Файлы добавлены в PDF Редактор'), source_paths=source_paths, on_success=added, on_complete=lambda: setattr(self, 'editor_pages_busy', False), quiet=True)
 
     @staticmethod
     def _editor_page_names_for_sources(paths: list[Path]) -> list[str]:
@@ -4928,7 +4964,7 @@ class PdfCombinerApp(BaseTk):
         self.after_idle(self._render_editor_page)
         self._refresh_editor_edits_panel()
         self._queue_autosave()
-        self.status.set(f"Добавлено файлов: {added_file_count}")
+        self.status.set(tr(f"Добавлено файлов: {added_file_count}"))
 
     def _load_editor_pdf(self, path: Path, page_source_names: list[str] | None = None) -> None:
         import fitz
@@ -4977,17 +5013,17 @@ class PdfCombinerApp(BaseTk):
         self.editor_place_mode = "select"
         self._set_editor_tool_visual("select", "select")
         if pdf_has_signatures(path):
-            self.editor_warning.set("Обнаружена электронная подпись. Правки будут отмечены рамкой, подпись станет недействительной; результат сохранится отдельно.")
+            self.editor_warning.set(tr("Обнаружена электронная подпись. Правки будут отмечены рамкой, подпись станет недействительной; результат сохранится отдельно."))
         else:
-            self.editor_warning.set("Корректировки отмечаются рамкой. Исходный PDF не изменяется; визуальная подпись не является электронной подписью.")
+            self.editor_warning.set(tr("Корректировки отмечаются рамкой. Исходный PDF не изменяется; визуальная подпись не является электронной подписью."))
         with fitz.open(str(path)) as document:
             standard = declared_pdfa(document)
         if standard:
-            self.editor_warning.set(f"{standard}: исходник не изменяется. Результат правок сохраняется как обычный PDF без подтверждения архивного соответствия.")
+            self.editor_warning.set(tr(f"{standard}: исходник не изменяется. Результат правок сохраняется как обычный PDF без подтверждения архивного соответствия."))
         self.after_idle(self._fit_editor_page)
         self.after_idle(self._refresh_editor_thumbnails)
         self._refresh_editor_edits_panel()
-        self.status.set(f"Открыт в редакторе: {path.name}")
+        self.status.set(tr(f"Открыт в редакторе: {path.name}"))
 
     def _load_editor_image(self, path: Path) -> None:
         try:
@@ -5026,7 +5062,7 @@ class PdfCombinerApp(BaseTk):
         self.after_idle(self._fit_editor_page)
         self.after_idle(self._refresh_editor_thumbnails)
         self._refresh_editor_edits_panel()
-        self.status.set(f"Открыто изображение: {path.name}")
+        self.status.set(tr(f"Открыто изображение: {path.name}"))
 
     def _change_editor_page(self, delta: int) -> None:
         if not self.editor_pdf_path or self.editor_source_kind != "pdf":
@@ -5101,7 +5137,7 @@ class PdfCombinerApp(BaseTk):
             )
             page_label = tk.Label(
                 footer,
-                text=f"{source_name}\nСтраница {page_index + 1}",
+                text=tr(f"{source_name}\nСтраница {page_index + 1}"),
                 bg=PANEL,
                 fg=TEXT,
                 font=("Arial", 8),
@@ -5286,35 +5322,35 @@ class PdfCombinerApp(BaseTk):
             font=("Arial", 10),
         )
         self.editor_context_menu = menu
-        menu.add_command(label="Добавить файлы…", command=self._choose_editor_file)
+        menu.add_command(label=tr("Добавить файлы…"), command=self._choose_editor_file)
         if page_index is not None:
-            menu.add_command(label="Открыть страницу", command=lambda: self._open_editor_thumbnail(page_index))
-            menu.add_command(label="Сохранить как…", command=lambda: self._export_editor_pages([page_index], choose_format=True))
-            menu.add_command(label="Сохранить выделенные страницы…", command=lambda: self._export_editor_pages(sorted(self.editor_page_selection)))
-            menu.add_command(label="Печатать выделенные страницы…", command=lambda: self._export_editor_pages(sorted(self.editor_page_selection), printing=True))
+            menu.add_command(label=tr("Открыть страницу"), command=lambda: self._open_editor_thumbnail(page_index))
+            menu.add_command(label=tr("Сохранить как…"), command=lambda: self._export_editor_pages([page_index], choose_format=True))
+            menu.add_command(label=tr("Сохранить выделенные страницы…"), command=lambda: self._export_editor_pages(sorted(self.editor_page_selection)))
+            menu.add_command(label=tr("Печатать выделенные страницы…"), command=lambda: self._export_editor_pages(sorted(self.editor_page_selection), printing=True))
             menu.add_separator()
-            menu.add_command(label="Выделить все страницы", command=self._select_all_editor_pages)
-            menu.add_command(label="Дублировать выбранные", command=self._duplicate_editor_pages)
-            menu.add_command(label="Повернуть влево", command=lambda: self._rotate_editor_pages(-90))
-            menu.add_command(label="Повернуть вправо", command=lambda: self._rotate_editor_pages(90))
-            menu.add_command(label="Удалить выбранные", command=self._delete_editor_selected_pages)
-            menu.add_command(label="Выровнять страницу…", command=lambda: (self._open_editor_thumbnail(page_index), self._start_page_alignment()))
+            menu.add_command(label=tr("Выделить все страницы"), command=self._select_all_editor_pages)
+            menu.add_command(label=tr("Дублировать выбранные"), command=self._duplicate_editor_pages)
+            menu.add_command(label=tr("Повернуть влево"), command=lambda: self._rotate_editor_pages(-90))
+            menu.add_command(label=tr("Повернуть вправо"), command=lambda: self._rotate_editor_pages(90))
+            menu.add_command(label=tr("Удалить выбранные"), command=self._delete_editor_selected_pages)
+            menu.add_command(label=tr("Выровнять страницу…"), command=lambda: (self._open_editor_thumbnail(page_index), self._start_page_alignment()))
             blank_menu = tk.Menu(menu, tearoff=False)
-            blank_menu.add_command(label="Перед выбранной", command=lambda: self._insert_editor_blank(page_index))
-            blank_menu.add_command(label="После выбранной", command=lambda: self._insert_editor_blank(page_index + 1))
-            menu.add_cascade(label="Вставить пустую страницу", menu=blank_menu)
+            blank_menu.add_command(label=tr("Перед выбранной"), command=lambda: self._insert_editor_blank(page_index))
+            blank_menu.add_command(label=tr("После выбранной"), command=lambda: self._insert_editor_blank(page_index + 1))
+            menu.add_cascade(label=tr("Вставить пустую страницу"), menu=blank_menu)
         else:
-            menu.add_command(label="Добавить пустую страницу…", command=self._create_blank_editor_document)
-        menu.add_command(label="Печатать документ…", command=self._print_editor_document)
+            menu.add_command(label=tr("Добавить пустую страницу…"), command=self._create_blank_editor_document)
+        menu.add_command(label=tr("Печатать документ…"), command=self._print_editor_document)
         split_menu = tk.Menu(menu, tearoff=False, bg=PANEL, fg=TEXT, activebackground=BLUE, activeforeground="white")
         for page_size in ("A4", "A3", "A5"):
             split_menu.add_command(
-                label=f"На {page_size}" + (" (по умолчанию)" if page_size == "A4" else ""),
+                label=tr(f"На {page_size}") + (tr(" (по умолчанию)") if page_size == "A4" else ""),
                 command=lambda size=page_size: self._split_editor_document(size),
             )
-        menu.add_cascade(label="Разрезать длинные страницы", menu=split_menu)
+        menu.add_cascade(label=tr("Разрезать длинные страницы"), menu=split_menu)
         menu.add_separator()
-        menu.add_command(label="Закрыть документ", command=self._clear_editor_document)
+        menu.add_command(label=tr("Закрыть документ"), command=self._clear_editor_document)
         try:
             menu.tk_popup(event.x_root, event.y_root)
         finally:
@@ -5341,7 +5377,7 @@ class PdfCombinerApp(BaseTk):
             self._show_editor_properties("select")
             self.editor_navigation_row.grid()
             self.after_idle(self._fit_editor_page)
-        self.editor_view_button.configure(text="К странице" if self.editor_grid_mode else "Все страницы")
+        self.editor_view_button.configure(text=tr("К странице") if self.editor_grid_mode else tr("Все страницы"))
         self._layout_editor_thumbnails()
         self._refresh_editor_thumbnail_state()
 
@@ -5358,7 +5394,7 @@ class PdfCombinerApp(BaseTk):
                 radius=22, fill=DROP_ZONE_BG, outline="#BCD2F1", width=2, dash=(6, 5), tags="grid-empty")
             if hasattr(self, "drop_zone_icon_image"):
                 canvas.create_image(width / 2, height / 2 - 50, image=self.drop_zone_icon_image, tags="grid-empty")
-            canvas.create_text(width / 2, height / 2 + 64, text="Перетащите PDF или изображения",
+            canvas.create_text(width / 2, height / 2 + 64, text=tr("Перетащите PDF или изображения"),
                 fill=TEXT, font=(FONT_FAMILY, 15, "bold"), tags="grid-empty")
             canvas.configure(scrollregion=(0, 0, width, height))
         columns = max(1, width // 155) if self.editor_grid_mode else 1
@@ -5505,7 +5541,7 @@ class PdfCombinerApp(BaseTk):
             height=max(190, reference.winfo_reqheight()),
         )
         ghost.grid_propagate(False)
-        label = "Новая\nпозиция" if show_label else ""
+        label = tr("Новая\nпозиция") if show_label else ""
         tk.Label(
             ghost,
             text=label,
@@ -5562,7 +5598,7 @@ class PdfCombinerApp(BaseTk):
                 self._refresh_editor_thumbnail_state()
                 return
             order = move_page_selection(self.editor_page_count, self.editor_page_selection, target)
-            self._arrange_editor_pages(order, "Порядок страниц изменён")
+            self._arrange_editor_pages(order, tr("Порядок страниц изменён"))
         elif plain:
             self.editor_page_selection = {index}
         self._refresh_editor_thumbnail_state()
@@ -5580,17 +5616,17 @@ class PdfCombinerApp(BaseTk):
 
     def _duplicate_editor_pages(self):
         order = [i for i in range(self.editor_page_count) for _ in range(2 if i in self.editor_page_selection else 1)]
-        self._arrange_editor_pages(order, "Страницы продублированы")
+        self._arrange_editor_pages(order, tr("Страницы продублированы"))
 
     def _delete_editor_selected_pages(self):
         order = [i for i in range(self.editor_page_count) if i not in self.editor_page_selection]
         if not order:
             self._clear_editor_document()
         else:
-            self._arrange_editor_pages(order, "Выбранные страницы удалены")
+            self._arrange_editor_pages(order, tr("Выбранные страницы удалены"))
 
     def _rotate_editor_pages(self, angle):
-        self._arrange_editor_pages(list(range(self.editor_page_count)), "Страницы повёрнуты",
+        self._arrange_editor_pages(list(range(self.editor_page_count)), tr("Страницы повёрнуты"),
                                    rotations={i: angle for i in self.editor_page_selection})
 
     def _editor_pdf_snapshot_job(self):
@@ -5635,9 +5671,9 @@ class PdfCombinerApp(BaseTk):
             self.editor_pdf_path = Path(result)
             self.editor_source_kind = "pdf"
             self.editor_page_count = len(order)
-            all_source_names = page_source_names + (["Пустая страница"] if blank else [])
+            all_source_names = page_source_names + ([tr("Пустая страница")] if blank else [])
             self.editor_page_source_names = [
-                all_source_names[old] if old < len(all_source_names) else "Пустая страница"
+                all_source_names[old] if old < len(all_source_names) else tr("Пустая страница")
                 for old in order
             ]
             self.editor_page_index = order.index(current) if current in order else 0
@@ -5669,7 +5705,7 @@ class PdfCombinerApp(BaseTk):
         blank = create_blank_pdf(app_cache_dir("blank-pages"), *dialog.result)
         order = list(range(self.editor_page_count))
         order.insert(position, self.editor_page_count)
-        self._arrange_editor_pages(order, "Пустая страница добавлена", blank=blank)
+        self._arrange_editor_pages(order, tr("Пустая страница добавлена"), blank=blank)
 
     def _export_editor_pages(self, indexes, choose_format=False, printing=False):
         if not indexes or not self.editor_pdf_path or self.editor_pages_busy:
@@ -5686,14 +5722,14 @@ class PdfCombinerApp(BaseTk):
         else:
             formats = [("PDF", "*.pdf")]
             if choose_format:
-                formats += [("PNG", "*.png"), ("JPEG", "*.jpg"), ("Word DOCX с распознанным текстом", "*.docx")]
+                formats += [("PNG", "*.png"), ("JPEG", "*.jpg"), (tr("Word DOCX с распознанным текстом"), "*.docx")]
             value = filedialog.asksaveasfilename(parent=self, initialdir=self._dialog_initialdir(),
-                initialfile=f"Страницы_{indexes[0] + 1}.pdf", defaultextension=".pdf", filetypes=formats, typevariable=selected_type)
+                initialfile=tr(f"Страницы_{indexes[0] + 1}.pdf"), defaultextension=".pdf", filetypes=formats, typevariable=selected_type)
             if not value:
                 return
             output = editor_save_path_for_type(Path(value), selected_type.get(), ".pdf")
             if editor_output_is_source(source, output):
-                messagebox.showinfo("Сохранение страницы", "Выберите новое имя, чтобы сохранить исходный документ")
+                messagebox.showinfo(tr("Сохранение страницы"), tr("Выберите новое имя, чтобы сохранить исходный документ"))
                 return
             self._remember_dialog_selection(output)
         snapshot = self._editor_pdf_snapshot_job()
@@ -5717,13 +5753,13 @@ class PdfCombinerApp(BaseTk):
                 if output.suffix.lower() == ".docx":
                     return source_to_layout_ocr_docx(selected, output, dpi=350, language=language)
                 return render_pdf_page_edits_to_image(selected, output, 0, [], [])
-        self._run_task(job, 'Страницы отправлены на печать' if printing else 'Страницы сохранены')
+        self._run_task(job, tr('Страницы отправлены на печать') if printing else tr('Страницы сохранены'))
 
     def _delete_editor_page(self, page_index: int) -> None:
         if not self._editor_is_pdf() or self.editor_page_count <= 1:
-            messagebox.showinfo("Удаление страницы", "В документе должна остаться хотя бы одна страница")
+            messagebox.showinfo(tr("Удаление страницы"), tr("В документе должна остаться хотя бы одна страница"))
             return
-        if not messagebox.askyesno("Удаление страницы", f"Удалить страницу {page_index + 1} из документа?"):
+        if not messagebox.askyesno(tr("Удаление страницы"), tr(f"Удалить страницу {page_index + 1} из документа?")):
             return
         source = Path(self.editor_pdf_path)
         destination = self._editor_cache_file(f"delete-{time.time_ns()}.pdf")
@@ -5739,13 +5775,13 @@ class PdfCombinerApp(BaseTk):
             apply_pdf_edits(source, edited, text_edits, signature_edits, region_edits, stroke_edits, crop_edits, alignment_edits)
             return delete_pdf_page(edited, destination, page_index)
 
-        self._run_task(job, 'Страница удалена', on_success=lambda result: self._replace_editor_source_after_page_operation(Path(result), source, 'Страница удалена. Сохраните документ под нужным именем.'))
+        self._run_task(job, tr('Страница удалена'), on_success=lambda result: self._replace_editor_source_after_page_operation(Path(result), source, tr('Страница удалена. Сохраните документ под нужным именем.')))
 
     def _split_editor_document(self, page_size: str = "A4") -> None:
         if self.editor_pages_busy or self.editor_index_busy:
             return
         if not self._editor_is_pdf():
-            messagebox.showinfo("Разрезание страниц", "Откройте PDF-документ")
+            messagebox.showinfo(tr("Разрезание страниц"), tr("Откройте PDF-документ"))
             return
         source = Path(self.editor_pdf_path)
         destination = self._editor_cache_file(f"split-{page_size}-{time.time_ns()}.pdf")
@@ -5764,7 +5800,7 @@ class PdfCombinerApp(BaseTk):
 
         self.editor_split_page_size.set(page_size)
         self.editor_pages_busy = True
-        self._run_task(job, f'Длинные страницы разрезаны на {page_size}', on_success=lambda result: self._replace_editor_source_after_page_operation(Path(result), source, f'Страницы разрезаны на {page_size}. Сохраните документ под нужным именем.'), on_complete=lambda: setattr(self, 'editor_pages_busy', False))
+        self._run_task(job, tr(f'Длинные страницы разрезаны на {page_size}'), on_success=lambda result: self._replace_editor_source_after_page_operation(Path(result), source, tr(f'Страницы разрезаны на {page_size}. Сохраните документ под нужным именем.')), on_complete=lambda: setattr(self, 'editor_pages_busy', False))
 
     def _replace_editor_source_after_page_operation(self, result: Path, original: Path, status_text: str) -> None:
         previous = self._editor_state_snapshot()
@@ -5799,36 +5835,36 @@ class PdfCombinerApp(BaseTk):
                 if self.editor_selected == (kind, index):
                     self.editor_edits_list.selection_set(tk.END)
         if not self.editor_edit_list_items:
-            self.editor_edits_list.insert(tk.END, "Правок пока нет")
+            self.editor_edits_list.insert(tk.END, tr("Правок пока нет"))
             self.editor_edits_list.itemconfigure(0, fg=MUTED)
 
     def _editor_edit_label(self, kind: str, edit) -> str:
         if kind == "text":
             if edit.opaque_background and not edit.text:
-                return "Закрытая область"
+                return tr("Закрытая область")
             if edit.replacement_source_rect:
                 before = " ".join(edit.original_text.split())
                 after = " ".join(edit.text.split())
-                return f"Замена: {before[:13]} -> {after[:13]}"
+                return tr(f"Замена: {before[:13]} -> {after[:13]}")
             value = " ".join(edit.text.split())
-            return f"Текст: {value[:28]}" + ("…" if len(value) > 28 else "")
+            return tr(f"Текст: {value[:28]}") + ("…" if len(value) > 28 else "")
         if kind == "signature":
             if not edit.keep_proportion:
-                return "Вставленная область"
-            return f"Изображение: {Path(edit.image_path).stem}"
+                return tr("Вставленная область")
+            return tr(f"Изображение: {Path(edit.image_path).stem}")
         if kind == "region":
-            return "Вставленная область"
+            return tr("Вставленная область")
         if kind == "stroke":
             if edit.style == "eraser":
-                return "Ластик"
+                return tr("Ластик")
             if edit.style == "line":
-                return "Линия"
+                return tr("Линия")
             if edit.style == "arrow":
-                return "Стрелка"
-            return "Карандаш"
+                return tr("Стрелка")
+            return tr("Карандаш")
         if kind == "alignment":
-            return f"Выравнивание: {edit.angle:+.2f}°"
-        return "Обрезка страницы"
+            return tr(f"Выравнивание: {edit.angle:+.2f}°")
+        return tr("Обрезка страницы")
 
     def _select_editor_edit_from_list(self, _event=None) -> None:
         selection = self.editor_edits_list.curselection()
@@ -5894,12 +5930,12 @@ class PdfCombinerApp(BaseTk):
 
     def _start_editor_search(self) -> None:
         if not self.editor_pdf_path:
-            messagebox.showinfo("Поиск", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("Поиск"), tr("Сначала откройте PDF или изображение"))
             return
         self._ensure_editor_ocr_current()
         if not self.editor_search_query.get().strip():
             (self.editor_reader_search_entry if self.editor_reading_mode else self.editor_search_entry).focus_set()
-            self.status.set("Введите слово или фразу для поиска")
+            self.status.set(tr("Введите слово или фразу для поиска"))
             return
         if len(self.editor_text_index) == self.editor_page_count and self.editor_text_index_language == self.editor_ocr_language.get():
             self._apply_editor_search_query()
@@ -5910,7 +5946,7 @@ class PdfCombinerApp(BaseTk):
         if self.editor_index_busy or self.editor_pages_busy:
             return
         if not self.editor_pdf_path:
-            messagebox.showinfo("Распознавание текста", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("Распознавание текста"), tr("Сначала откройте PDF или изображение"))
             return
         self._ensure_editor_ocr_current()
         if (len(self.editor_text_index) == self.editor_page_count
@@ -5918,7 +5954,7 @@ class PdfCombinerApp(BaseTk):
             self._activate_recognized_text_selection()
             return
         if not ocr_models_available(language=self.editor_ocr_language.get()):
-            messagebox.showerror("Распознавание текста", "Не найдена встроенная модель выбранного языка")
+            messagebox.showerror(tr("Распознавание текста"), tr("Не найдена встроенная модель выбранного языка"))
             return
         self._build_editor_text_index(force_ocr=True)
 
@@ -5927,11 +5963,11 @@ class PdfCombinerApp(BaseTk):
                 or self.editor_pages_busy or self.editor_word_busy_dialog is not None):
             return
         if not self.editor_pdf_path:
-            messagebox.showinfo("Замена слова", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("Замена слова"), tr("Сначала откройте PDF или изображение"))
             return
         self._ensure_editor_ocr_current()
         if not ocr_models_available(language=self.editor_ocr_language.get()):
-            messagebox.showerror("Замена слова", "Не найдена встроенная модель выбранного языка")
+            messagebox.showerror(tr("Замена слова"), tr("Не найдена встроенная модель выбранного языка"))
             return
         self._activate_word_replacement_mode()
 
@@ -5944,7 +5980,7 @@ class PdfCombinerApp(BaseTk):
         self.editor_canvas.delete("editor-draft")
         self.editor_canvas.configure(cursor="hand2")
         self._set_editor_tool_visual("replace_word", "word")
-        self.status.set("Щёлкните по распознанному слову, которое нужно заменить")
+        self.status.set(tr("Щёлкните по распознанному слову, которое нужно заменить"))
         self._render_editor_page()
 
     def _replace_word_at_canvas_point(self, canvas_x: float, canvas_y: float) -> None:
@@ -5966,8 +6002,8 @@ class PdfCombinerApp(BaseTk):
         angle = self._editor_alignment_angle(page_index)
         source_point = self._rotate_editor_rect((pdf_x, pdf_y, pdf_x, pdf_y),
                                                  -angle, *self.editor_page_size)[:2]
-        self._show_word_busy("Распознавание выбранного слова…")
-        self._run_task(lambda: recognize_word_region(source, page_index, source_point, language=language), 'Выбранное слово распознано', [source], on_success=lambda result: self._word_region_ready(result, pdf_x, pdf_y, source), on_complete=self._finish_word_busy, quiet=True)
+        self._show_word_busy(tr("Распознавание выбранного слова…"))
+        self._run_task(lambda: recognize_word_region(source, page_index, source_point, language=language), tr('Выбранное слово распознано'), [source], on_success=lambda result: self._word_region_ready(result, pdf_x, pdf_y, source), on_complete=self._finish_word_busy, quiet=True)
 
     def _word_at_editor_point(self, page: PageText, pdf_x: float, pdf_y: float):
         for word in page.words:
@@ -5981,7 +6017,7 @@ class PdfCombinerApp(BaseTk):
             return
         word = self._word_at_editor_point(page, pdf_x, pdf_y)
         if word is None:
-            self.status.set("Слово не найдено. Щёлкните точнее внутри букв")
+            self.status.set(tr("Слово не найдено. Щёлкните точнее внутри букв"))
             return
         self.editor_word_region_uses_ocr = page.used_ocr
         self._prepare_editor_replacement_word(page, word)
@@ -5992,10 +6028,10 @@ class PdfCombinerApp(BaseTk):
         source = Path(self.editor_pdf_path)
         page_index = self.editor_page_index
         alignment_angle = self._editor_alignment_angle(page_index)
-        self._show_word_busy("Определение шрифта и подготовка фона…")
-        self._run_task(lambda: prepare_word_replacement(source, destination, page_index, source_rect, word.text, alignment_angle=alignment_angle), 'Стиль слова определён', [source], on_success=lambda prepared: self._prompt_word_replacement(prepared, word.text), on_complete=self._finish_word_busy, quiet=True)
+        self._show_word_busy(tr("Определение шрифта и подготовка фона…"))
+        self._run_task(lambda: prepare_word_replacement(source, destination, page_index, source_rect, word.text, alignment_angle=alignment_angle), tr('Стиль слова определён'), [source], on_success=lambda prepared: self._prompt_word_replacement(prepared, word.text), on_complete=self._finish_word_busy, quiet=True)
 
-    def _show_word_busy(self, text: str, title: str = "Замена слова") -> None:
+    def _show_word_busy(self, text: str, title: str = tr("Замена слова")) -> None:
         if self.editor_word_busy_dialog is not None:
             return
         self.editor_drag_start = None
@@ -6047,7 +6083,7 @@ class PdfCombinerApp(BaseTk):
             scan_effect=True,
         )
         if not dialog.result:
-            self.status.set("Замена слова отменена")
+            self.status.set(tr("Замена слова отменена"))
             return
         new_text, bold, italic, scan_effect, underline = dialog.result
         self._complete_word_replacement(prepared, original_text, new_text, bold, italic, scan_effect, underline)
@@ -6103,8 +6139,8 @@ class PdfCombinerApp(BaseTk):
         self.editor_canvas.configure(cursor="arrow")
         self._load_selected_editor_properties()
         self.status.set(
-            f"Слово заменено. Совпадение стиля: {round(prepared.confidence * 100)}%. "
-            "Положение можно уточнить стрелками по горизонтали и вертикали"
+            tr(f"Слово заменено. Совпадение стиля: {round(prepared.confidence * 100)}%. "
+            "Положение можно уточнить стрелками по горизонтали и вертикали")
         )
         self._render_editor_page()
 
@@ -6138,7 +6174,7 @@ class PdfCombinerApp(BaseTk):
         self.editor_index_busy = True
         self.editor_word_background_ocr = background_only
         if self.editor_word_after_ocr:
-            self._show_word_busy("Распознавание текущей страницы…")
+            self._show_word_busy(tr("Распознавание текущей страницы…"))
         self.editor_search_generation += 1
         generation = self.editor_search_generation
         self._editor_index_request_key = self._editor_ocr_cache_key()
@@ -6148,15 +6184,15 @@ class PdfCombinerApp(BaseTk):
         self.editor_ocr_language_box.configure(state="disabled")
         self.editor_ocr_progress.configure(value=0, maximum=max(1, self.editor_page_count))
         self.editor_ocr_progress.grid()
-        self.editor_search_summary.set("Распознавание…" if force_ocr else "Индексация…")
-        progress_text = "Распознавание текста в документе…" if force_ocr else "Подготовка поиска по документу…"
+        self.editor_search_summary.set(tr("Распознавание…") if force_ocr else tr("Индексация…"))
+        progress_text = tr("Распознавание текста в документе…") if force_ocr else tr("Подготовка поиска по документу…")
         self._start_global_progress(progress_text, determinate=True, maximum=max(1, self.editor_page_count))
         events: queue.Queue = queue.Queue()
         started_at = time.perf_counter()
         page_count = self.editor_page_count
 
         def progress(current: int, total: int, used_ocr: bool) -> None:
-            label = "OCR" if used_ocr or force_ocr else "Индекс"
+            label = "OCR" if used_ocr or force_ocr else tr("Индекс")
             events.put(("progress", label, current, total))
 
         def worker() -> None:
@@ -6224,7 +6260,7 @@ class PdfCombinerApp(BaseTk):
         self.editor_word_after_ocr = False
         self._finish_global_progress()
         if background_only:
-            self.status.set(f"Фоновое распознавание не завершено: {exc}")
+            self.status.set(tr(f"Фоновое распознавание не завершено: {exc}"))
         else:
             self._show_error(exc, details)
 
@@ -6235,7 +6271,7 @@ class PdfCombinerApp(BaseTk):
         self._editor_index_request_key = None
         if request_key is not None and request_key != self._editor_ocr_cache_key():
             self._editor_index_failed(generation, ValueError(
-                "Исходный документ изменился во время распознавания. Откройте его заново."), "")
+                tr("Исходный документ изменился во время распознавания. Откройте его заново.")), "")
             self._reset_editor_search()
             return
         if not self.editor_word_background_ocr:
@@ -6260,14 +6296,14 @@ class PdfCombinerApp(BaseTk):
         self._finish_global_progress()
         ocr_pages = sum(page.used_ocr for page in index)
         self.status.set(
-            f"Распознавание завершено: страниц {ocr_pages}. Текст можно выделять мышью и копировать"
+            tr(f"Распознавание завершено: страниц {ocr_pages}. Текст можно выделять мышью и копировать")
             if mode.startswith("ocr:")
-            else "Документ проиндексирован для поиска"
+            else tr("Документ проиндексирован для поиска")
         )
         if self.editor_search_query.get().strip() and not mode.startswith("page-best:"):
             self._apply_editor_search_query()
         else:
-            self.editor_search_summary.set(f"Страниц: {len(index)}")
+            self.editor_search_summary.set(tr(f"Страниц: {len(index)}"))
         if self.editor_word_after_ocr:
             self.editor_word_after_ocr = False
             if (self.editor_page_index, self.editor_ocr_language.get()) in self.editor_best_ocr_pages:
@@ -6279,14 +6315,14 @@ class PdfCombinerApp(BaseTk):
 
     def _activate_recognized_text_selection(self, render: bool = True) -> None:
         if not self.editor_text_index:
-            self.status.set("Сначала нажмите «Распознать текст»")
+            self.status.set(tr("Сначала нажмите «Распознать текст»"))
             return
         self.editor_place_mode = "recognized_text"
         self.editor_selected = None
         self.editor_region_selection = None
         self.editor_canvas.configure(cursor="xterm")
         self._set_editor_tool_visual("", "select")
-        self.status.set("Протяните мышью по тексту; затем нажмите Ctrl+C или используйте правую кнопку мыши")
+        self.status.set(tr("Протяните мышью по тексту; затем нажмите Ctrl+C или используйте правую кнопку мыши"))
         if render:
             self._render_editor_page()
 
@@ -6301,22 +6337,22 @@ class PdfCombinerApp(BaseTk):
         except tk.TclError:
             return
         self.editor_clipboard = None
-        self.status.set(f"Распознанный текст скопирован: {len(text)} симв.")
+        self.status.set(tr(f"Распознанный текст скопирован: {len(text)} симв."))
 
     def _apply_editor_search_query(self) -> None:
         self.editor_search_hits = search_text_index(self.editor_text_index, self.editor_search_query.get())
         self.editor_search_hit_index = 0 if self.editor_search_hits else -1
         self._refresh_editor_thumbnail_state()
         if not self.editor_search_hits:
-            self.editor_search_summary.set("Не найдено")
-            self.status.set("Совпадений не найдено")
+            self.editor_search_summary.set(tr("Не найдено"))
+            self.status.set(tr("Совпадений не найдено"))
             self._render_editor_page()
             return
-        self.editor_search_summary.set(f"1 из {len(self.editor_search_hits)}")
+        self.editor_search_summary.set(tr(f"1 из {len(self.editor_search_hits)}"))
         hit = self.editor_search_hits[0]
         rect = self._search_hit_editor_rect(hit)
         self._go_to_editor_page(hit.page_index, rect)
-        self.status.set(f"Найдено совпадений: {len(self.editor_search_hits)}")
+        self.status.set(tr(f"Найдено совпадений: {len(self.editor_search_hits)}"))
 
     def _move_editor_search_hit(self, delta: int) -> None:
         if not self.editor_search_hits:
@@ -6324,7 +6360,7 @@ class PdfCombinerApp(BaseTk):
             return
         self.editor_search_hit_index = (self.editor_search_hit_index + delta) % len(self.editor_search_hits)
         hit = self.editor_search_hits[self.editor_search_hit_index]
-        self.editor_search_summary.set(f"{self.editor_search_hit_index + 1} из {len(self.editor_search_hits)}")
+        self.editor_search_summary.set(tr(f"{self.editor_search_hit_index + 1} из {len(self.editor_search_hits)}"))
         self._go_to_editor_page(hit.page_index, self._search_hit_editor_rect(hit))
 
     def _search_hit_editor_rect(self, hit: SearchHit) -> tuple[float, float, float, float]:
@@ -6487,7 +6523,7 @@ class PdfCombinerApp(BaseTk):
         if self.editor_reading_mode:
             return
         if not self.editor_pdf_path:
-            messagebox.showinfo("Режим чтения", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("Режим чтения"), tr("Сначала откройте PDF или изображение"))
             return
         if self.editor_grid_mode:
             self._toggle_editor_grid()
@@ -6510,7 +6546,7 @@ class PdfCombinerApp(BaseTk):
         self.editor_region_selection = None
         self.editor_place_mode = "recognized_text" if self.editor_text_index else None
         self.editor_canvas.configure(cursor="xterm" if self.editor_text_index else "arrow")
-        self.status.set("Режим чтения: Esc возвращает обычный интерфейс")
+        self.status.set(tr("Режим чтения: Esc возвращает обычный интерфейс"))
         self.after_idle(self._finish_entering_editor_reading_mode)
         self.after(260, self._finish_entering_editor_reading_mode)
 
@@ -6528,7 +6564,7 @@ class PdfCombinerApp(BaseTk):
         self._sync_editor_edits_visibility()
         self.editor_place_mode = "select"
         self.editor_canvas.configure(cursor="arrow")
-        self.status.set("Режим чтения закрыт")
+        self.status.set(tr("Режим чтения закрыт"))
         if self.editor_reading_restore_window and self._window_maximized:
             self._toggle_maximize_window()
         self.editor_reading_restore_window = False
@@ -6553,7 +6589,7 @@ class PdfCombinerApp(BaseTk):
             self.editor_canvas.delete("editor-draft")
             self.editor_canvas.configure(cursor="arrow")
         self._set_editor_tool_visual("select", "select")
-        self.status.set("Выбор и выделенные области сброшены")
+        self.status.set(tr("Выбор и выделенные области сброшены"))
         self._render_editor_page()
         return "break"
 
@@ -6623,26 +6659,26 @@ class PdfCombinerApp(BaseTk):
         )
         self.editor_context_menu = menu
         if not self.editor_pdf_path:
-            menu.add_command(label="Создать пустой лист…", command=self._create_blank_editor_document)
-            menu.add_command(label="Открыть PDF или изображение…", command=self._choose_editor_file)
+            menu.add_command(label=tr("Создать пустой лист…"), command=self._create_blank_editor_document)
+            menu.add_command(label=tr("Открыть PDF или изображение…"), command=self._choose_editor_file)
             menu.tk_popup(event.x_root, event.y_root)
             return "break"
 
         if self.editor_reading_mode:
             if self.editor_recognized_text_selection:
                 menu.add_command(
-                    label="Копировать выделенный текст    Ctrl+C",
+                    label=tr("Копировать выделенный текст    Ctrl+C"),
                     command=self._copy_recognized_text,
                 )
                 menu.add_separator()
             if not self.editor_text_index:
-                menu.add_command(label="Распознать текст", command=self._start_editor_ocr)
-            menu.add_command(label="По ширине", command=self._fit_editor_width)
-            menu.add_command(label="Страница целиком", command=self._fit_editor_page)
-            menu.add_command(label="Масштаб 100%", command=lambda: self._set_editor_zoom(100.0))
+                menu.add_command(label=tr("Распознать текст"), command=self._start_editor_ocr)
+            menu.add_command(label=tr("По ширине"), command=self._fit_editor_width)
+            menu.add_command(label=tr("Страница целиком"), command=self._fit_editor_page)
+            menu.add_command(label=tr("Масштаб 100%"), command=lambda: self._set_editor_zoom(100.0))
             menu.add_separator()
-            menu.add_command(label="Печать…", command=self._print_editor_document)
-            menu.add_command(label="Выйти из режима чтения", command=self._exit_editor_reading_mode)
+            menu.add_command(label=tr("Печать…"), command=self._print_editor_document)
+            menu.add_command(label=tr("Выйти из режима чтения"), command=self._exit_editor_reading_mode)
             try:
                 menu.tk_popup(event.x_root, event.y_root)
             finally:
@@ -6655,12 +6691,12 @@ class PdfCombinerApp(BaseTk):
         page_x1 = page_x0 + self.editor_page_size[0] * self.editor_scale
         page_y1 = page_y0 + self.editor_page_size[1] * self.editor_scale
         if not (page_x0 <= canvas_x <= page_x1 and page_y0 <= canvas_y <= page_y1):
-            menu.add_command(label="Добавить пустой лист…", command=self._create_blank_editor_document)
-            menu.add_command(label="Очистить все открытые файлы", command=self._clear_editor_document)
+            menu.add_command(label=tr("Добавить пустой лист…"), command=self._create_blank_editor_document)
+            menu.add_command(label=tr("Очистить все открытые файлы"), command=self._clear_editor_document)
             menu.add_separator()
-            menu.add_command(label="Вписать страницу в окно", command=self._fit_editor_page)
-            menu.add_command(label="Печать…", command=self._print_editor_document)
-            menu.add_command(label="Сохранить как…", command=self._save_editor_pdf)
+            menu.add_command(label=tr("Вписать страницу в окно"), command=self._fit_editor_page)
+            menu.add_command(label=tr("Печать…"), command=self._print_editor_document)
+            menu.add_command(label=tr("Сохранить как…"), command=self._save_editor_pdf)
             menu.tk_popup(event.x_root, event.y_root)
             return "break"
 
@@ -6675,10 +6711,10 @@ class PdfCombinerApp(BaseTk):
                 self._show_editor_properties("select")
             self._render_editor_page()
             if selected[0] == "text":
-                menu.add_command(label="Изменить текст…", command=self._edit_context_text)
-            menu.add_command(label="Копировать объект    Ctrl+C", command=self._copy_selected_editor_object)
-            menu.add_command(label="Создать копию объекта", command=self._duplicate_selected_editor_object)
-            menu.add_command(label="Удалить объект", command=self._delete_selected_editor_object)
+                menu.add_command(label=tr("Изменить текст…"), command=self._edit_context_text)
+            menu.add_command(label=tr("Копировать объект    Ctrl+C"), command=self._copy_selected_editor_object)
+            menu.add_command(label=tr("Создать копию объекта"), command=self._duplicate_selected_editor_object)
+            menu.add_command(label=tr("Удалить объект"), command=self._delete_selected_editor_object)
             menu.add_separator()
 
         if (
@@ -6686,38 +6722,38 @@ class PdfCombinerApp(BaseTk):
             and self.editor_recognized_text_selection[0] == self.editor_page_index
         ):
             menu.add_command(
-                label="Копировать распознанный текст    Ctrl+C",
+                label=tr("Копировать распознанный текст    Ctrl+C"),
                 command=self._copy_recognized_text,
             )
         if self.editor_text_index:
             menu.add_command(
-                label="Выделять распознанный текст",
+                label=tr("Выделять распознанный текст"),
                 command=self._activate_recognized_text_selection,
             )
-            menu.add_command(label="Заменить слово здесь…", command=self._replace_context_word)
-        menu.add_command(label="Добавить текст здесь…", command=self._add_context_text)
-        menu.add_command(label="Закрыть область…", command=self._start_erase_placement)
-        menu.add_command(label="Выделить область копирования…", command=self._start_region_copy)
+            menu.add_command(label=tr("Заменить слово здесь…"), command=self._replace_context_word)
+        menu.add_command(label=tr("Добавить текст здесь…"), command=self._add_context_text)
+        menu.add_command(label=tr("Закрыть область…"), command=self._start_erase_placement)
+        menu.add_command(label=tr("Выделить область копирования…"), command=self._start_region_copy)
         if self.editor_region_selection and self.editor_region_selection[0] == self.editor_page_index:
-            menu.add_command(label="Копировать выделенную область    Ctrl+C", command=self._copy_selected_editor_object)
-        menu.add_command(label="Вставить    Ctrl+V", command=self._paste_editor_object)
-        menu.add_command(label="Обрезать страницу…", command=self._start_crop_selection)
-        menu.add_command(label="Выровнять страницу…", command=self._start_page_alignment)
+            menu.add_command(label=tr("Копировать выделенную область    Ctrl+C"), command=self._copy_selected_editor_object)
+        menu.add_command(label=tr("Вставить    Ctrl+V"), command=self._paste_editor_object)
+        menu.add_command(label=tr("Обрезать страницу…"), command=self._start_crop_selection)
+        menu.add_command(label=tr("Выровнять страницу…"), command=self._start_page_alignment)
         menu.add_separator()
-        menu.add_command(label="Карандаш", command=self._start_pencil)
-        menu.add_command(label="Линия", command=self._start_line)
-        menu.add_command(label="Стрелка", command=self._start_arrow)
-        menu.add_command(label="Ластик", command=self._start_free_eraser)
+        menu.add_command(label=tr("Карандаш"), command=self._start_pencil)
+        menu.add_command(label=tr("Линия"), command=self._start_line)
+        menu.add_command(label=tr("Стрелка"), command=self._start_arrow)
+        menu.add_command(label=tr("Ластик"), command=self._start_free_eraser)
         if self._editor_is_pdf():
             split_menu = tk.Menu(menu, tearoff=False, bg=PANEL, fg=TEXT, activebackground=BLUE, activeforeground="white")
             for page_size in ("A4", "A3", "A5"):
                 split_menu.add_command(
-                    label=f"На {page_size}" + (" (по умолчанию)" if page_size == "A4" else ""),
+                    label=tr(f"На {page_size}") + (tr(" (по умолчанию)") if page_size == "A4" else ""),
                     command=lambda size=page_size: self._split_editor_document(size),
                 )
-            menu.add_cascade(label="Разрезать длинные страницы", menu=split_menu)
+            menu.add_cascade(label=tr("Разрезать длинные страницы"), menu=split_menu)
         if self._editor_is_pdf():
-            menu.add_command(label="Определить стиль в этой точке", command=lambda: self._detect_style_at_canvas_point(canvas_x, canvas_y))
+            menu.add_command(label=tr("Определить стиль в этой точке"), command=lambda: self._detect_style_at_canvas_point(canvas_x, canvas_y))
 
         signature_menu = tk.Menu(menu, tearoff=False, bg=PANEL, fg=TEXT, activebackground=BLUE, activeforeground="white")
         self.editor_signature_paths = list_signatures()
@@ -6725,14 +6761,14 @@ class PdfCombinerApp(BaseTk):
             for path in self.editor_signature_paths:
                 signature_menu.add_command(label=path.stem, command=lambda item=path: self._add_context_signature(item))
             signature_menu.add_separator()
-        signature_menu.add_command(label="Открыть библиотеку…", command=self._open_signature_library)
-        menu.add_cascade(label="Добавить подпись или отметку", menu=signature_menu)
+        signature_menu.add_command(label=tr("Открыть библиотеку…"), command=self._open_signature_library)
+        menu.add_cascade(label=tr("Добавить подпись или отметку"), menu=signature_menu)
         menu.add_separator()
-        menu.add_command(label="Добавить пустой лист…", command=self._create_blank_editor_document)
-        menu.add_command(label="Очистить все открытые файлы", command=self._clear_editor_document)
+        menu.add_command(label=tr("Добавить пустой лист…"), command=self._create_blank_editor_document)
+        menu.add_command(label=tr("Очистить все открытые файлы"), command=self._clear_editor_document)
         menu.add_separator()
-        menu.add_command(label="Печать…", command=self._print_editor_document)
-        menu.add_command(label="Сохранить как…", command=self._save_editor_pdf)
+        menu.add_command(label=tr("Печать…"), command=self._print_editor_document)
+        menu.add_command(label=tr("Сохранить как…"), command=self._save_editor_pdf)
         try:
             menu.tk_popup(event.x_root, event.y_root)
         finally:
@@ -6778,8 +6814,8 @@ class PdfCombinerApp(BaseTk):
         if point is None:
             return
         text = simpledialog.askstring(
-            "Добавить текст",
-            "Введите надпись:",
+            tr("Добавить текст"),
+            tr("Введите надпись:"),
             initialvalue=self.editor_replace_text.get(),
             parent=self,
         )
@@ -6814,7 +6850,7 @@ class PdfCombinerApp(BaseTk):
         self.editor_selected = ("text", len(self.editor_text_edits) - 1)
         self._set_editor_tool_visual("select", "text")
         self.editor_place_mode = "select"
-        self.status.set("Надпись добавлена; её можно перемещать и менять размер")
+        self.status.set(tr("Надпись добавлена; её можно перемещать и менять размер"))
         self._render_editor_page()
 
     def _replace_context_word(self) -> None:
@@ -6826,7 +6862,7 @@ class PdfCombinerApp(BaseTk):
         edit = self._selected_editor_object()
         if not isinstance(edit, TextEdit):
             return
-        value = simpledialog.askstring("Изменить текст", "Введите новый текст:", initialvalue=edit.text, parent=self)
+        value = simpledialog.askstring(tr("Изменить текст"), tr("Введите новый текст:"), initialvalue=edit.text, parent=self)
         if value is None:
             return
         if edit.replacement_source_rect:
@@ -6838,7 +6874,7 @@ class PdfCombinerApp(BaseTk):
         self.editor_text_edits[index] = replace(edit, text=value)
         self.editor_replace_text.set(value)
         self._show_editor_properties("text")
-        self.status.set("Текст изменён")
+        self.status.set(tr("Текст изменён"))
         self._render_editor_page()
 
     def _add_context_signature(self, path: Path) -> None:
@@ -6855,7 +6891,7 @@ class PdfCombinerApp(BaseTk):
         self.editor_selected = None
         self.editor_place_mode = "select"
         self._set_editor_tool_visual("select", "select")
-        self.status.set("Подпись или отметка добавлена")
+        self.status.set(tr("Подпись или отметка добавлена"))
         self._render_editor_page()
 
     def _start_object_selection(self) -> None:
@@ -6869,7 +6905,7 @@ class PdfCombinerApp(BaseTk):
         self.editor_canvas.delete("editor-draft")
         self.editor_canvas.configure(cursor="arrow")
         self._set_editor_tool_visual("select", "select")
-        self.status.set("Выберите объект; перетащите его или потяните синий маркер для изменения размера")
+        self.status.set(tr("Выберите объект; перетащите его или потяните синий маркер для изменения размера"))
         self._render_editor_page()
 
     def _find_editor_object_at(self, pdf_x: float, pdf_y: float) -> tuple[str, int] | None:
@@ -6931,7 +6967,7 @@ class PdfCombinerApp(BaseTk):
             return self.editor_crop_edits
         if kind == "alignment":
             return self.editor_alignment_edits
-        raise ValueError(f"Неизвестный тип объекта редактора: {kind}")
+        raise ValueError(tr(f"Неизвестный тип объекта редактора: {kind}"))
 
     def _editor_object_rect(self, kind: str, edit):
         if edit is None:
@@ -7024,7 +7060,7 @@ class PdfCombinerApp(BaseTk):
         canvas.create_text(
             center_x,
             center_y + 28,
-            text="Откройте или перетащите PDF/изображение",
+            text=tr("Откройте или перетащите PDF/изображение"),
             fill=TEXT,
             font=(FONT_FAMILY, 15, "bold"),
             tags="editor_empty",
@@ -7032,7 +7068,7 @@ class PdfCombinerApp(BaseTk):
         canvas.create_text(
             center_x,
             center_y + 64,
-            text="Файл откроется в рабочей области для просмотра и редактирования",
+            text=tr("Файл откроется в рабочей области для просмотра и редактирования"),
             fill=MUTED,
             font=(FONT_FAMILY, 9),
             tags="editor_empty",
@@ -7097,7 +7133,7 @@ class PdfCombinerApp(BaseTk):
         image.close()
         if scale < requested:
             self.editor_zoom_percent.set(scale * 100)
-            self.status.set("Масштаб ограничен для экономии памяти на длинной странице")
+            self.status.set(tr("Масштаб ограничен для экономии памяти на длинной странице"))
             key = (*key[:4], scale, angle)
         self._editor_preview_cache = (key, self.editor_page_image, page_width, page_height, pix_width, pix_height, scale)
 
@@ -7407,7 +7443,7 @@ class PdfCombinerApp(BaseTk):
             self._tip(button, name)
         custom = tk.Button(
             palette,
-            text="…" if compact else "Свой…",
+            text="…" if compact else tr("Свой…"),
             command=custom_command,
             bg=variable.get(),
             fg=self._editor_color_foreground(variable.get()),
@@ -7418,7 +7454,7 @@ class PdfCombinerApp(BaseTk):
             pady=2,
         )
         custom.pack(side="left", padx=(4, 0))
-        self._tip(custom, "Выбрать свой цвет")
+        self._tip(custom, tr("Выбрать свой цвет"))
         return custom
 
     @staticmethod
@@ -7454,11 +7490,11 @@ class PdfCombinerApp(BaseTk):
             if edit.background_color != rgb:
                 self._remember_editor_state()
                 self.editor_text_edits[self.editor_selected[1]] = replace(edit, background_color=rgb, color=rgb)
-                self.status.set("Цвет закрытой области изменён")
+                self.status.set(tr("Цвет закрытой области изменён"))
                 self._render_editor_page()
 
     def _choose_editor_text_color(self) -> None:
-        selected = colorchooser.askcolor(self.editor_text_color.get(), title="Цвет текста", parent=self)
+        selected = colorchooser.askcolor(self.editor_text_color.get(), title=tr("Цвет текста"), parent=self)
         if selected[1]:
             self._set_editor_text_color(selected[1])
 
@@ -7469,7 +7505,7 @@ class PdfCombinerApp(BaseTk):
         self.editor_drag_start = None
         self.editor_object_drag = None
         self.editor_canvas.configure(cursor="crosshair")
-        self.status.set("Пипетка: щёлкните по буквам нужного цвета; Esc — отмена")
+        self.status.set(tr("Пипетка: щёлкните по буквам нужного цвета; Esc — отмена"))
 
     def _pick_word_color(self, canvas_x, canvas_y) -> None:
         x = (canvas_x - self.editor_offset[0]) / self.editor_scale
@@ -7488,18 +7524,18 @@ class PdfCombinerApp(BaseTk):
             image.close()
         self.editor_place_mode = "select"
         self.editor_canvas.configure(cursor="")
-        self.status.set("Цвет выбран; нажмите «Применить» для изменения слова")
+        self.status.set(tr("Цвет выбран; нажмите «Применить» для изменения слова"))
 
     def _save_word_style(self) -> None:
         styles = normalize_word_styles(self.preferences.get("word_style_presets"))
-        name = simpledialog.askstring("Настройки слова", "Название набора настроек:", parent=self)
+        name = simpledialog.askstring(tr("Настройки слова"), tr("Название набора настроек:"), parent=self)
         if not name or not name.strip():
             return
         name = name.strip()[:60]
         if name not in styles and len(styles) >= 20:
-            messagebox.showinfo("Настройки слова", "Сохранено 20 наборов. Удалите ненужный набор.", parent=self)
+            messagebox.showinfo(tr("Настройки слова"), tr("Сохранено 20 наборов. Удалите ненужный набор."), parent=self)
             return
-        if name in styles and not messagebox.askyesno("Настройки слова", "Заменить сохранённый набор?", parent=self):
+        if name in styles and not messagebox.askyesno(tr("Настройки слова"), tr("Заменить сохранённый набор?"), parent=self):
             return
         try:
             style = {"font_family": self.editor_font_family.get(), "font_size": self.editor_font_size.get(),
@@ -7508,14 +7544,14 @@ class PdfCombinerApp(BaseTk):
                      "scan_effect": self.editor_word_scan_effect.get()}
             valid = normalize_word_styles({name: style})
             if not valid:
-                raise ValueError("Проверьте шрифт, размер (6–72 пт) и цвет текста")
+                raise ValueError(tr("Проверьте шрифт, размер (6–72 пт) и цвет текста"))
             styles.update(valid)
             self.preferences["word_style_presets"] = styles
             save_preferences(self.preferences)
         except (OSError, ValueError, tk.TclError) as exc:
             self._show_error(exc)
             return
-        self.status.set(f"Настройки слова «{name}» сохранены")
+        self.status.set(tr(f"Настройки слова «{name}» сохранены"))
 
     def _load_word_style(self, name: str) -> None:
         style = normalize_word_styles(self.preferences.get("word_style_presets")).get(name)
@@ -7527,7 +7563,7 @@ class PdfCombinerApp(BaseTk):
         for key, variable in (("bold", self.editor_text_bold), ("italic", self.editor_text_italic),
                               ("underline", self.editor_text_underline), ("scan_effect", self.editor_word_scan_effect)):
             variable.set(style[key])
-        self.status.set(f"Настройки «{name}» загружены; нажмите «Применить»")
+        self.status.set(tr(f"Настройки «{name}» загружены; нажмите «Применить»"))
 
     def _delete_word_style(self, name: str) -> None:
         styles = normalize_word_styles(self.preferences.get("word_style_presets"))
@@ -7551,46 +7587,46 @@ class PdfCombinerApp(BaseTk):
             delete_menu = tk.Menu(menu, tearoff=False)
             for name in styles:
                 delete_menu.add_command(label=name, command=lambda n=name: self._delete_word_style(n))
-            menu.add_cascade(label="Удалить набор", menu=delete_menu)
+            menu.add_cascade(label=tr("Удалить набор"), menu=delete_menu)
         else:
-            menu.add_command(label="Нет сохранённых настроек", state="disabled")
+            menu.add_command(label=tr("Нет сохранённых настроек"), state="disabled")
 
     def _choose_editor_draw_color(self) -> None:
-        selected = colorchooser.askcolor(self.editor_draw_color.get(), title="Цвет рисования и закрытия", parent=self)
+        selected = colorchooser.askcolor(self.editor_draw_color.get(), title=tr("Цвет рисования и закрытия"), parent=self)
         if selected[1]:
             self._set_editor_draw_color(selected[1])
 
     def _start_text_placement(self) -> None:
         self._set_editor_tool_visual("text", "text")
         if not self.editor_pdf_path:
-            messagebox.showinfo("PDF Редактор", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("PDF Редактор"), tr("Сначала откройте PDF или изображение"))
             return
         if not self.editor_replace_text.get():
             self.editor_place_mode = "select"
             self.editor_text_entry.focus_set()
-            self.status.set("Введите текст в строке параметров и нажмите «Разместить»")
+            self.status.set(tr("Введите текст в строке параметров и нажмите «Разместить»"))
             return
         self.editor_place_mode = "text"
         self.editor_canvas.configure(cursor="crosshair")
-        self.status.set("Щёлкните место вставки текста или протяните рамку нужного размера")
+        self.status.set(tr("Щёлкните место вставки текста или протяните рамку нужного размера"))
 
     def _start_erase_placement(self) -> None:
         if not self.editor_pdf_path:
-            messagebox.showinfo("PDF Редактор", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("PDF Редактор"), tr("Сначала откройте PDF или изображение"))
             return
         self.editor_place_mode = "erase"
         self.editor_canvas.configure(cursor="crosshair")
         self._set_editor_tool_visual("erase", "area")
-        self.status.set("Выделите область, которую нужно закрыть")
+        self.status.set(tr("Выделите область, которую нужно закрыть"))
 
     def _start_region_copy(self) -> None:
         if not self.editor_pdf_path:
-            messagebox.showinfo("PDF Редактор", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("PDF Редактор"), tr("Сначала откройте PDF или изображение"))
             return
         if self._editor_is_pdf() and pdf_has_signatures(self.editor_pdf_path):
             messagebox.showwarning(
-                "Копирование недоступно",
-                "Документ содержит криптографическую подпись. Копирование областей для него отключено.",
+                tr("Копирование недоступно"),
+                tr("Документ содержит криптографическую подпись. Копирование областей для него отключено."),
             )
             return
         self.editor_place_mode = "copy_region"
@@ -7601,66 +7637,66 @@ class PdfCombinerApp(BaseTk):
         self.editor_canvas.delete("editor-draft")
         self.editor_canvas.configure(cursor="crosshair")
         self._set_editor_tool_visual("copy_region", "select")
-        self.status.set("Выделите область, затем нажмите Ctrl+C или используйте меню правой кнопки мыши")
+        self.status.set(tr("Выделите область, затем нажмите Ctrl+C или используйте меню правой кнопки мыши"))
         self._render_editor_page()
 
     def _start_style_detection(self) -> None:
         self._set_editor_tool_visual("detect", "text")
         if not self.editor_pdf_path:
-            messagebox.showinfo("PDF Редактор", "Сначала откройте PDF")
+            messagebox.showinfo(tr("PDF Редактор"), tr("Сначала откройте PDF"))
             return
         if not self._editor_is_pdf():
-            messagebox.showinfo("Определение стиля", "Стиль можно определить только в PDF с текстовым слоем")
+            messagebox.showinfo(tr("Определение стиля"), tr("Стиль можно определить только в PDF с текстовым слоем"))
             return
         self.editor_place_mode = "detect"
         self.editor_canvas.configure(cursor="crosshair")
-        self.status.set("Кликните по тексту в PDF для определения стиля")
+        self.status.set(tr("Кликните по тексту в PDF для определения стиля"))
 
     def _start_pencil(self) -> None:
         if not self.editor_pdf_path:
-            messagebox.showinfo("PDF Редактор", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("PDF Редактор"), tr("Сначала откройте PDF или изображение"))
             return
         self.editor_place_mode = "pencil"
         self.editor_canvas.configure(cursor="pencil")
         self._set_editor_tool_visual("pencil", "draw")
-        self.status.set("Рисуйте мышью поверх страницы или изображения")
+        self.status.set(tr("Рисуйте мышью поверх страницы или изображения"))
 
     def _start_line(self) -> None:
         if not self.editor_pdf_path:
-            messagebox.showinfo("PDF Редактор", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("PDF Редактор"), tr("Сначала откройте PDF или изображение"))
             return
         self.editor_place_mode = "line"
         self.editor_canvas.configure(cursor="crosshair")
         self._set_editor_tool_visual("line", "draw")
-        self.status.set("Протяните линию от начальной до конечной точки")
+        self.status.set(tr("Протяните линию от начальной до конечной точки"))
 
     def _start_arrow(self) -> None:
         if not self.editor_pdf_path:
-            messagebox.showinfo("PDF Редактор", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("PDF Редактор"), tr("Сначала откройте PDF или изображение"))
             return
         self.editor_place_mode = "arrow"
         self.editor_canvas.configure(cursor="crosshair")
         self._set_editor_tool_visual("arrow", "draw")
-        self.status.set("Протяните стрелку от начальной до конечной точки")
+        self.status.set(tr("Протяните стрелку от начальной до конечной точки"))
 
     def _start_free_eraser(self) -> None:
         if not self.editor_pdf_path:
-            messagebox.showinfo("PDF Редактор", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("PDF Редактор"), tr("Сначала откройте PDF или изображение"))
             return
         self.editor_place_mode = "free_erase"
         self.editor_canvas.configure(cursor="dotbox")
         self._set_editor_tool_visual("free_erase", "draw")
-        self.status.set("Проведите ластиком по области, которую нужно закрыть")
+        self.status.set(tr("Проведите ластиком по области, которую нужно закрыть"))
 
     def _start_crop_selection(self) -> None:
         if not self.editor_pdf_path:
-            messagebox.showinfo("PDF Редактор", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("PDF Редактор"), tr("Сначала откройте PDF или изображение"))
             return
         self.editor_place_mode = "crop"
         self.editor_pending_crop = None
         self.editor_canvas.configure(cursor="crosshair")
         self._set_editor_tool_visual("crop", "crop")
-        self.status.set("Выделите область, затем нажмите «Применить обрезку»")
+        self.status.set(tr("Выделите область, затем нажмите «Применить обрезку»"))
 
     def _editor_alignment_angle(self, page_index: int | None = None) -> float:
         index = self.editor_page_index if page_index is None else int(page_index)
@@ -7673,12 +7709,12 @@ class PdfCombinerApp(BaseTk):
 
     def _start_page_alignment(self) -> None:
         if not self.editor_pdf_path:
-            messagebox.showinfo("Выравнивание", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("Выравнивание"), tr("Сначала откройте PDF или изображение"))
             return
         page_index = self.editor_page_index
         source = Path(self.editor_pdf_path)
         self._set_editor_tool_visual("align", "select")
-        self.status.set("Определяю наклон текста на странице…")
+        self.status.set(tr("Определяю наклон текста на странице…"))
 
         def show_dialog(detected: float) -> None:
             current = self._editor_alignment_angle(page_index)
@@ -7695,7 +7731,7 @@ class PdfCombinerApp(BaseTk):
             self.editor_alignment_preview = None
             if dialog.result is None:
                 self._render_editor_page()
-                self.status.set("Выравнивание отменено")
+                self.status.set(tr("Выравнивание отменено"))
                 return
             value = float(dialog.result)
             if abs(value - current) < 0.01:
@@ -7710,10 +7746,10 @@ class PdfCombinerApp(BaseTk):
             self.editor_selected = None
             self.editor_thumbnail_generation += 1
             self._refresh_editor_thumbnails()
-            self.status.set(f"Страница выровнена: {value:+.2f}°")
+            self.status.set(tr(f"Страница выровнена: {value:+.2f}°"))
             self._render_editor_page()
 
-        self._run_task(lambda: estimate_page_alignment(source, page_index), 'Наклон страницы определён', on_success=show_dialog)
+        self._run_task(lambda: estimate_page_alignment(source, page_index), tr('Наклон страницы определён'), on_success=show_dialog)
 
     def _cancel_pending_crop(self) -> None:
         self.editor_pending_crop = None
@@ -7722,14 +7758,14 @@ class PdfCombinerApp(BaseTk):
             self.editor_canvas.delete("editor-draft")
             self.editor_canvas.configure(cursor="arrow")
         self._set_editor_tool_visual("select", "select")
-        self.status.set("Обрезка отменена")
+        self.status.set(tr("Обрезка отменена"))
         self._render_editor_page()
 
     def _apply_pending_crop(self) -> None:
         if self.editor_index_busy or self.editor_pages_busy or self.editor_word_busy_dialog is not None:
             return
         if not self.editor_pdf_path or self.editor_pending_crop is None:
-            messagebox.showinfo("Обрезка", "Сначала выделите область, которая должна остаться")
+            messagebox.showinfo(tr("Обрезка"), tr("Сначала выделите область, которая должна остаться"))
             return
         source = Path(self.editor_pdf_path)
         snapshot = self._editor_state_snapshot()
@@ -7764,8 +7800,8 @@ class PdfCombinerApp(BaseTk):
                 crop.rect,
                 alignment_edits=alignment_edits,
             )
-        self._show_word_busy("Применение обрезки…", title="Обрезка страницы")
-        self._run_task(callback, 'Обрезка применена', on_success=lambda result: self._editor_crop_applied(Path(result), source, snapshot, history), on_complete=self._finish_word_busy, quiet=True)
+        self._show_word_busy(tr("Применение обрезки…"), title=tr("Обрезка страницы"))
+        self._run_task(callback, tr('Обрезка применена'), on_success=lambda result: self._editor_crop_applied(Path(result), source, snapshot, history), on_complete=self._finish_word_busy, quiet=True)
 
     def _editor_crop_applied(self, result: Path, original: Path, snapshot, history) -> None:
         if result.suffix.lower() == ".pdf":
@@ -7781,7 +7817,7 @@ class PdfCombinerApp(BaseTk):
         self.editor_last_save_path = original.with_name(f"{original.stem}_cropped{suggested_suffix}")
         self.editor_dirty = True
         self.editor_pending_crop = None
-        self.status.set("Обрезка применена: размер страницы уменьшен до выбранной области")
+        self.status.set(tr("Обрезка применена: размер страницы уменьшен до выбранной области"))
         self._queue_autosave()
 
     def _detect_style_at_canvas_point(self, x: float, y: float) -> None:
@@ -7794,8 +7830,8 @@ class PdfCombinerApp(BaseTk):
         self._set_editor_tool_visual("text", "text")
         if not style:
             messagebox.showinfo(
-                "Определение стиля",
-                "В этой точке нет текстового слоя. Для скана выберите кириллический шрифт и размер вручную.",
+                tr("Определение стиля"),
+                tr("В этой точке нет текстового слоя. Для скана выберите кириллический шрифт и размер вручную."),
             )
             return
         family = style["font_family"]
@@ -7818,7 +7854,7 @@ class PdfCombinerApp(BaseTk):
         color = f"#{red:02x}{green:02x}{blue:02x}"
         self.editor_text_color.set(color)
         self.editor_color_button.configure(bg=color)
-        self.status.set(f"Стиль определён: {family}, {style['font_size']:.1f} пт")
+        self.status.set(tr(f"Стиль определён: {family}, {style['font_size']:.1f} пт"))
 
     def _refresh_signature_list(self) -> None:
         self.editor_signature_paths = list_signatures()
@@ -7838,7 +7874,7 @@ class PdfCombinerApp(BaseTk):
 
         window = tk.Toplevel(self)
         self.signature_window = window
-        window.title("Библиотека подписей и отметок")
+        window.title(tr("Библиотека подписей и отметок"))
         window.geometry("480x390")
         window.minsize(440, 340)
         window.transient(self)
@@ -7850,7 +7886,7 @@ class PdfCombinerApp(BaseTk):
         heading = tk.Frame(window, bg=BG)
         heading.grid(row=0, column=0, sticky="ew", padx=18, pady=(12, 6))
         heading.columnconfigure(0, weight=1)
-        tk.Label(heading, text="Подписи и отметки", bg=BG, fg=DEEP_BLUE, font=("Arial", 16, "bold")).grid(row=0, column=0, sticky="w")
+        tk.Label(heading, text=tr("Подписи и отметки"), bg=BG, fg=DEEP_BLUE, font=("Arial", 16, "bold")).grid(row=0, column=0, sticky="w")
         close_button = tk.Button(
             heading,
             text="×",
@@ -7867,7 +7903,7 @@ class PdfCombinerApp(BaseTk):
             font=("Arial", 16),
         )
         close_button.grid(row=0, column=1, sticky="e")
-        self._tip(close_button, "Закрыть библиотеку")
+        self._tip(close_button, tr("Закрыть библиотеку"))
 
         list_holder = tk.Frame(window, bg=PANEL, highlightthickness=1, highlightbackground=BORDER)
         list_holder.grid(row=1, column=0, sticky="nsew", padx=18)
@@ -7895,14 +7931,14 @@ class PdfCombinerApp(BaseTk):
 
         options = tk.Frame(window, bg=BG)
         options.grid(row=2, column=0, sticky="ew", padx=18, pady=(10, 6))
-        ttk.Checkbutton(options, text="Удалять фон", variable=self.signature_remove_background).pack(anchor="w")
-        ttk.Checkbutton(options, text="Усилить бледные штрихи", variable=self.signature_enhance).pack(anchor="w")
+        ttk.Checkbutton(options, text=tr("Удалять фон"), variable=self.signature_remove_background).pack(anchor="w")
+        ttk.Checkbutton(options, text=tr("Усилить бледные штрихи"), variable=self.signature_enhance).pack(anchor="w")
 
         buttons = tk.Frame(window, bg=BG)
         buttons.grid(row=3, column=0, sticky="ew", padx=18, pady=(4, 16))
-        ttk.Button(buttons, text="Добавить файл…", command=self._import_editor_signature).pack(side="left")
-        ttk.Button(buttons, text="Удалить", command=self._delete_editor_signature).pack(side="left", padx=5)
-        ttk.Button(buttons, text="Разместить", command=self._place_signature_from_library, style="Accent.TButton").pack(side="right")
+        ttk.Button(buttons, text=tr("Добавить файл…"), command=self._import_editor_signature).pack(side="left")
+        ttk.Button(buttons, text=tr("Удалить"), command=self._delete_editor_signature).pack(side="left", padx=5)
+        ttk.Button(buttons, text=tr("Разместить"), command=self._place_signature_from_library, style="Accent.TButton").pack(side="right")
         self._install_tooltips()
 
     def _close_signature_library(self) -> None:
@@ -7917,11 +7953,11 @@ class PdfCombinerApp(BaseTk):
             self._close_signature_library()
 
     def _import_editor_signature(self) -> None:
-        source = filedialog.askopenfilename(initialdir=self._dialog_initialdir(), filetypes=[("Изображения", "*.png *.jpg *.jpeg *.webp *.bmp *.tif *.tiff")])
+        source = filedialog.askopenfilename(initialdir=self._dialog_initialdir(), filetypes=[(tr("Изображения"), "*.png *.jpg *.jpeg *.webp *.bmp *.tif *.tiff")])
         if not source:
             return
         self._remember_dialog_selection(source)
-        name = simpledialog.askstring("Название подписи", "Как назвать подпись?", initialvalue=Path(source).stem, parent=self)
+        name = simpledialog.askstring(tr("Название подписи"), tr("Как назвать подпись?"), initialvalue=Path(source).stem, parent=self)
         if not name:
             return
         try:
@@ -7930,14 +7966,14 @@ class PdfCombinerApp(BaseTk):
             self._show_error(exc)
             return
         self._refresh_signature_list()
-        self.status.set(f"Подпись сохранена: {imported.stem}")
+        self.status.set(tr(f"Подпись сохранена: {imported.stem}"))
 
     def _delete_editor_signature(self) -> None:
         selection = self.signature_list.curselection()
         if not selection:
             return
         path = self.editor_signature_paths[selection[0]]
-        if not messagebox.askyesno("Удаление подписи", f"Удалить подпись «{path.stem}» из библиотеки?"):
+        if not messagebox.askyesno(tr("Удаление подписи"), tr(f"Удалить подпись «{path.stem}» из библиотеки?")):
             return
         self.editor_signature_edits = [edit for edit in self.editor_signature_edits if Path(edit.image_path) != path]
         self.editor_selected = None
@@ -7949,11 +7985,11 @@ class PdfCombinerApp(BaseTk):
 
     def _start_signature_placement(self) -> None:
         if not self.editor_pdf_path:
-            messagebox.showinfo("Подпись", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("Подпись"), tr("Сначала откройте PDF или изображение"))
             return
         selection = self.signature_list.curselection()
         if not selection:
-            messagebox.showinfo("Подпись", "Выберите подпись в библиотеке")
+            messagebox.showinfo(tr("Подпись"), tr("Выберите подпись в библиотеке"))
             return
         source = self.editor_signature_paths[selection[0]]
         destination = app_cache_dir("signature-overlays") / f"signature-{time.time_ns()}.png"
@@ -7965,7 +8001,7 @@ class PdfCombinerApp(BaseTk):
         self.editor_place_mode = "signature"
         self.editor_canvas.configure(cursor="crosshair")
         self._set_editor_tool_visual("signature", "signature")
-        self.status.set("Протяните рамку визуальной подписи на странице")
+        self.status.set(tr("Протяните рамку визуальной подписи на странице"))
 
     def _editor_canvas_press(self, event) -> None:
         if self.editor_word_busy_dialog is not None:
@@ -8038,13 +8074,13 @@ class PdfCombinerApp(BaseTk):
                 properties = "area" if closed_area else "word" if replacement_word else "text" if kind == "text" else "select"
                 self._set_editor_tool_visual("select", properties)
                 self.status.set(
-                    "Замена выбрана: перетаскивайте её для уточнения положения"
+                    tr("Замена выбрана: перетаскивайте её для уточнения положения")
                     if replacement_word
-                    else "Объект выбран: перетащите его или синий маркер размера"
+                    else tr("Объект выбран: перетащите его или синий маркер размера")
                 )
             else:
                 self._set_editor_tool_visual("select", "select")
-                self.status.set("Объект не выбран")
+                self.status.set(tr("Объект не выбран"))
             self._render_editor_page()
             return
         if self.editor_place_mode in {"pencil", "free_erase", "line", "arrow"}:
@@ -8138,7 +8174,7 @@ class PdfCombinerApp(BaseTk):
                 if isinstance(moved, TextEdit) and moved.replacement_source_rect:
                     self.editor_word_offset_x.set(round(moved.rect[0] - moved.replacement_source_rect[0], 1))
                     self.editor_word_offset_y.set(round(moved.rect[1] - moved.replacement_source_rect[1], 1))
-                self.status.set("Положение объекта изменено")
+                self.status.set(tr("Положение объекта изменено"))
             self.editor_object_drag = None
             self.editor_drag_start = None
             self.editor_canvas.delete("editor-draft")
@@ -8160,7 +8196,7 @@ class PdfCombinerApp(BaseTk):
                 self.editor_stroke_edits.append(
                     StrokeEdit(self.editor_page_index, tuple(self.editor_stroke_points), width, color, style)
                 )
-                self.status.set("Штрих добавлен")
+                self.status.set(tr("Штрих добавлен"))
             self.editor_stroke_points = []
             self.editor_drag_start = None
             self.editor_canvas.delete("editor-draft")
@@ -8186,9 +8222,9 @@ class PdfCombinerApp(BaseTk):
             self.editor_drag_start = None
             self.editor_canvas.delete("editor-draft")
             if text:
-                self.status.set(f"Выделено символов: {len(text)}. Нажмите Ctrl+C для копирования")
+                self.status.set(tr(f"Выделено символов: {len(text)}. Нажмите Ctrl+C для копирования"))
             else:
-                self.status.set("В выбранной области распознанный текст не найден")
+                self.status.set(tr("В выбранной области распознанный текст не найден"))
             self._render_editor_page()
             return
         if self.editor_place_mode not in {"text", "erase", "signature", "copy_region", "crop"}:
@@ -8226,13 +8262,13 @@ class PdfCombinerApp(BaseTk):
             canvas_rect = (min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1))
             pdf_rect = self._canvas_rect_to_pdf(canvas_rect)
         if pdf_rect[2] - pdf_rect[0] < 5 or pdf_rect[3] - pdf_rect[1] < 5:
-            self.status.set("Выделенная область слишком мала или находится за пределами страницы")
+            self.status.set(tr("Выделенная область слишком мала или находится за пределами страницы"))
         elif mode == "crop":
             self.editor_pending_crop = pdf_rect
             self.editor_selected = None
             self.editor_place_mode = "crop"
             self._set_editor_tool_visual("crop", "crop")
-            self.status.set("Область выбрана. Нажмите «Применить обрезку»")
+            self.status.set(tr("Область выбрана. Нажмите «Применить обрезку»"))
         elif mode in {"text", "erase"}:
             self._remember_editor_state()
             color = (self.editor_text_color.get() if mode == "text" else self.editor_draw_color.get()).lstrip("#")
@@ -8255,17 +8291,17 @@ class PdfCombinerApp(BaseTk):
             )
             self.editor_text_edits.append(edit)
             self.editor_selected = ("text", len(self.editor_text_edits) - 1)
-            self.status.set("Надпись добавлена" if mode == "text" else "Область закрыта")
+            self.status.set(tr("Надпись добавлена") if mode == "text" else tr("Область закрыта"))
         elif mode == "copy_region":
             self.editor_region_selection = (self.editor_page_index, pdf_rect)
             self.editor_selected = None
-            self.status.set("Область выделена. Нажмите Ctrl+C, затем Ctrl+V в этом или другом окне pdf bars")
+            self.status.set(tr("Область выделена. Нажмите Ctrl+C, затем Ctrl+V в этом или другом окне pdf bars"))
         else:
             self._remember_editor_state()
             edit = SignatureEdit(self.editor_page_index, pdf_rect, str(self.editor_placing_signature))
             self.editor_signature_edits.append(edit)
             self.editor_selected = None
-            self.status.set("Подпись размещена")
+            self.status.set(tr("Подпись размещена"))
         self.editor_placing_signature = None
         if mode != "crop":
             self.editor_place_mode = "select"
@@ -8367,7 +8403,7 @@ class PdfCombinerApp(BaseTk):
         self._refresh_editor_thumbnails()
         self.editor_dirty = True
         self._queue_autosave()
-        self.status.set("Действие отменено")
+        self.status.set(tr("Действие отменено"))
         self._render_editor_page()
 
     def _redo_editor_action(self) -> None:
@@ -8396,7 +8432,7 @@ class PdfCombinerApp(BaseTk):
         self._refresh_editor_thumbnails()
         self.editor_dirty = True
         self._queue_autosave()
-        self.status.set("Действие повторено")
+        self.status.set(tr("Действие повторено"))
         self._render_editor_page()
 
     def _editor_state_snapshot(
@@ -8434,7 +8470,7 @@ class PdfCombinerApp(BaseTk):
 
     def _apply_selected_text_properties(self) -> None:
         if not self.editor_selected or self.editor_selected[0] != "text":
-            messagebox.showinfo("PDF Редактор", "Выберите размещённый текст или закрытую область")
+            messagebox.showinfo(tr("PDF Редактор"), tr("Выберите размещённый текст или закрытую область"))
             return
         index = self.editor_selected[1]
         current = self.editor_text_edits[index]
@@ -8459,21 +8495,21 @@ class PdfCombinerApp(BaseTk):
         if updated != current:
             self._remember_editor_state()
             self.editor_text_edits[index] = updated
-            self.status.set("Свойства выбранного текста обновлены")
+            self.status.set(tr("Свойства выбранного текста обновлены"))
             self._render_editor_page()
 
     def _apply_selected_word_properties(self) -> None:
         if not self.editor_selected or self.editor_selected[0] != "text":
-            messagebox.showinfo("Замена слова", "Выберите ранее заменённое слово")
+            messagebox.showinfo(tr("Замена слова"), tr("Выберите ранее заменённое слово"))
             return
         index = self.editor_selected[1]
         current = self.editor_text_edits[index]
         if not current.replacement_source_rect:
-            messagebox.showinfo("Замена слова", "Выбранный объект не является заменой слова")
+            messagebox.showinfo(tr("Замена слова"), tr("Выбранный объект не является заменой слова"))
             return
         text = self.editor_replace_text.get().strip()
         if not text:
-            messagebox.showinfo("Замена слова", "Введите новое слово")
+            messagebox.showinfo(tr("Замена слова"), tr("Введите новое слово"))
             return
         color = self.editor_text_color.get().lstrip("#")
         rgb = tuple(int(color[position:position + 2], 16) / 255.0 for position in (0, 2, 4))
@@ -8514,7 +8550,7 @@ class PdfCombinerApp(BaseTk):
             self.editor_text_edits[index] = updated
         self.editor_word_offset_x.set(round(updated.rect[0] - updated.replacement_source_rect[0], 1))
         self.editor_word_offset_y.set(round(updated.rect[1] - updated.replacement_source_rect[1], 1))
-        self.status.set("Замена обновлена; фон исходного слова сохраняется на месте")
+        self.status.set(tr("Замена обновлена; фон исходного слова сохраняется на месте"))
         self._render_editor_page()
 
     def _nudge_selected_word(self, delta_x: float, delta_y: float) -> None:
@@ -8538,13 +8574,13 @@ class PdfCombinerApp(BaseTk):
             self.editor_thumbnail_generation += 1
             self._refresh_editor_thumbnails()
         self.editor_selected = None
-        self.status.set("Выбранный объект удалён")
+        self.status.set(tr("Выбранный объект удалён"))
         self._render_editor_page()
 
     def _duplicate_selected_editor_object(self) -> None:
         payload = self._editor_clipboard_payload()
         if payload is None:
-            messagebox.showinfo("PDF Редактор", "Сначала выберите созданный объект")
+            messagebox.showinfo(tr("PDF Редактор"), tr("Сначала выберите созданный объект"))
             return
         self._write_editor_clipboard(payload)
         self._paste_editor_object()
@@ -8555,16 +8591,16 @@ class PdfCombinerApp(BaseTk):
             return
         self._write_editor_clipboard(payload)
         if self.editor_region_selection and not self.editor_selected:
-            self.status.set("Область скопирована. Нажмите Ctrl+V в этом или другом окне pdf bars")
+            self.status.set(tr("Область скопирована. Нажмите Ctrl+V в этом или другом окне pdf bars"))
         else:
-            self.status.set("Объект скопирован. Нажмите Ctrl+V в этом или другом окне pdf bars")
+            self.status.set(tr("Объект скопирован. Нажмите Ctrl+V в этом или другом окне pdf bars"))
 
     def _paste_editor_object(self) -> None:
         if not self.editor_pdf_path:
             return
         payload = self._read_editor_clipboard()
         if payload is None:
-            self.status.set("В буфере обмена нет объекта pdf bars")
+            self.status.set(tr("В буфере обмена нет объекта pdf bars"))
             return
         try:
             kind = payload["kind"]
@@ -8594,7 +8630,7 @@ class PdfCombinerApp(BaseTk):
             elif kind == "image":
                 image_path = Path(str(data["image_path"]))
                 if not image_path.is_file():
-                    raise FileNotFoundError(f"Файл вставляемого изображения не найден: {image_path}")
+                    raise FileNotFoundError(tr(f"Файл вставляемого изображения не найден: {image_path}"))
                 self.editor_signature_edits.append(
                     SignatureEdit(
                         self.editor_page_index,
@@ -8624,7 +8660,7 @@ class PdfCombinerApp(BaseTk):
                 self.editor_crop_edits.append(CropEdit(self.editor_page_index, rect))
                 self.editor_selected = ("crop", len(self.editor_crop_edits) - 1)
             else:
-                raise ValueError("Формат объекта в буфере обмена не поддерживается")
+                raise ValueError(tr("Формат объекта в буфере обмена не поддерживается"))
         except Exception as exc:
             if self.editor_undo_stack:
                 self.editor_undo_stack.pop()
@@ -8632,7 +8668,7 @@ class PdfCombinerApp(BaseTk):
             self._show_error(exc)
             return
         self.editor_region_selection = None
-        self.status.set("Объект вставлен; его можно переместить или изменить")
+        self.status.set(tr("Объект вставлен; его можно переместить или изменить"))
         self._render_editor_page()
 
     def _editor_clipboard_payload(self) -> dict | None:
@@ -8785,13 +8821,13 @@ class PdfCombinerApp(BaseTk):
 
     def _clear_editor_document(self) -> None:
         if self.editor_pages_busy or self.editor_index_busy:
-            self.status.set("Дождитесь завершения текущей операции")
+            self.status.set(tr("Дождитесь завершения текущей операции"))
             return
         if not self.editor_pdf_path:
             return
         if self.editor_dirty and not messagebox.askyesno(
-            "PDF Редактор",
-            "Очистить все открытые файлы и несохранённые изменения?",
+            tr("PDF Редактор"),
+            tr("Очистить все открытые файлы и несохранённые изменения?"),
             parent=self,
         ):
             return
@@ -8827,17 +8863,17 @@ class PdfCombinerApp(BaseTk):
         self.editor_page_selection.clear()
         for child in self.editor_thumbnail_grid.winfo_children():
             child.destroy()
-        self.editor_page_label.set("Страница —")
+        self.editor_page_label.set(tr("Страница —"))
         self._set_editor_tool_visual("select", "select")
         self._refresh_editor_edits_panel()
         self._draw_editor_empty_state()
         self._layout_editor_thumbnails()
-        self.status.set("Рабочая область PDF Редактора очищена")
+        self.status.set(tr("Рабочая область PDF Редактора очищена"))
         self._queue_autosave()
 
     def _print_editor_document(self) -> None:
         if not self.editor_pdf_path:
-            messagebox.showinfo("Печать", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("Печать"), tr("Сначала откройте PDF или изображение"))
             return
         dialog = PrintDialog(self, self.editor_page_count or 1)
         if not dialog.result:
@@ -8883,15 +8919,15 @@ class PdfCombinerApp(BaseTk):
                 if os.name != "nt":
                     remove_temporary_print_file(output)
 
-        self._run_task(print_job, 'Документ отправлен на печать')
+        self._run_task(print_job, tr('Документ отправлен на печать'))
 
     def _save_editor_pdf(self) -> None:
         if not self.editor_pdf_path:
-            messagebox.showinfo("PDF Редактор", "Сначала откройте PDF или изображение")
+            messagebox.showinfo(tr("PDF Редактор"), tr("Сначала откройте PDF или изображение"))
             return
         filetypes = [
             ("PDF", "*.pdf"),
-            ("Word DOCX с распознанным текстом", "*.docx"),
+            (tr("Word DOCX с распознанным текстом"), "*.docx"),
             ("PNG", "*.png"),
             ("JPEG", "*.jpg"),
             ("WEBP", "*.webp"),
@@ -8905,7 +8941,7 @@ class PdfCombinerApp(BaseTk):
             default_name = self.editor_last_save_path.name
         elif self.editor_new_document:
             initial_dir = usable_last_folder(self.preferences)
-            default_name = f"Новый документ{default_suffix}"
+            default_name = tr(f"Новый документ{default_suffix}")
         else:
             initial_dir = self.editor_pdf_path.parent
             default_name = f"{self.editor_pdf_path.stem}_edited{default_suffix}"
@@ -8930,10 +8966,10 @@ class PdfCombinerApp(BaseTk):
                 Path(self.editor_pdf_path).with_name(f"{Path(self.editor_pdf_path).stem}_edited.pdf")
             )
             messagebox.showwarning(
-                "Выберите другое имя",
-                "Открытый исходный PDF нельзя заменить во время редактирования. "
+                tr("Выберите другое имя"),
+                tr("Открытый исходный PDF нельзя заменить во время редактирования. "
                 "Сохраните результат как отдельный файл.\n\n"
-                f"Предлагаемое имя: {suggested.name}",
+                f"Предлагаемое имя: {suggested.name}"),
             )
             initial_dir = suggested.parent
             default_name = suggested.name
@@ -8948,15 +8984,15 @@ class PdfCombinerApp(BaseTk):
                 self._show_error(exc)
                 return
             if standard and not messagebox.askyesno(
-                "Сохранение копии PDF/A",
-                f"Исходник заявлен как {standard}. Изменённая копия будет обычным PDF, "
-                "без подтверждения соответствия PDF/A. Исходный архивный файл останется неизменным. Продолжить?",
+                tr("Сохранение копии PDF/A"),
+                tr(f"Исходник заявлен как {standard}. Изменённая копия будет обычным PDF, "
+                "без подтверждения соответствия PDF/A. Исходный архивный файл останется неизменным. Продолжить?"),
                 parent=self,
             ):
                 return
         if self._editor_is_pdf() and output_path.suffix.lower() == ".pdf" and pdf_has_signatures(self.editor_pdf_path) and not messagebox.askyesno(
-            "Электронная подпись станет недействительной",
-            "Документ содержит электронную подпись. После изменения она станет недействительной. Продолжить и сохранить отдельный файл?",
+            tr("Электронная подпись станет недействительной"),
+            tr("Документ содержит электронную подпись. После изменения она станет недействительной. Продолжить и сохранить отдельный файл?"),
         ):
             return
         text_edits = list(self.editor_text_edits)
@@ -8974,13 +9010,13 @@ class PdfCombinerApp(BaseTk):
                     edited = Path(folder) / "edited.pdf"
                     snapshot(edited)
                     return source_to_layout_ocr_docx(edited, output_path, dpi=350, language=ocr_language)
-            self._run_task(export_docx, 'Распознанный текст сохранён в DOCX', source_paths=[self.editor_pdf_path])
+            self._run_task(export_docx, tr('Распознанный текст сохранён в DOCX'), source_paths=[self.editor_pdf_path])
         elif self._editor_is_pdf() and output_path.suffix.lower() == ".pdf":
-            self._run_task(lambda: apply_pdf_edits(self.editor_pdf_path, output_path, text_edits, signature_edits, region_edits, stroke_edits, crop_edits, alignment_edits), 'Изменённый PDF сохранён', on_success=self._editor_save_completed)
+            self._run_task(lambda: apply_pdf_edits(self.editor_pdf_path, output_path, text_edits, signature_edits, region_edits, stroke_edits, crop_edits, alignment_edits), tr('Изменённый PDF сохранён'), on_success=self._editor_save_completed)
         elif self._editor_is_pdf():
-            self._run_task(lambda: render_pdf_page_edits_to_image(self.editor_pdf_path, output_path, self.editor_page_index, text_edits, signature_edits, region_edits, stroke_edits, crop_rect, alignment_edits=alignment_edits), 'Страница сохранена как изображение', on_success=self._editor_save_completed)
+            self._run_task(lambda: render_pdf_page_edits_to_image(self.editor_pdf_path, output_path, self.editor_page_index, text_edits, signature_edits, region_edits, stroke_edits, crop_rect, alignment_edits=alignment_edits), tr('Страница сохранена как изображение'), on_success=self._editor_save_completed)
         else:
-            self._run_task(lambda: apply_image_edits(self.editor_pdf_path, output_path, text_edits, signature_edits, region_edits, stroke_edits, crop_rect, alignment_edits=alignment_edits), 'Изображение сохранено', on_success=self._editor_save_completed)
+            self._run_task(lambda: apply_image_edits(self.editor_pdf_path, output_path, text_edits, signature_edits, region_edits, stroke_edits, crop_rect, alignment_edits=alignment_edits), tr('Изображение сохранено'), on_success=self._editor_save_completed)
 
     def _editor_save_completed(self, result) -> None:
         self.editor_dirty = False
@@ -9014,17 +9050,17 @@ class PdfCombinerApp(BaseTk):
     def _export_ocr_diagnostics(self) -> None:
         from .diagnostics import export_diagnostics
 
-        path = filedialog.asksaveasfilename(parent=self, title="Сохранить отладочную информацию",
+        path = filedialog.asksaveasfilename(parent=self, title=tr("Сохранить отладочную информацию"),
             initialdir=self._dialog_initialdir(), initialfile=time.strftime("PDF_Bars_diagnostics_%Y%m%d_%H%M%S.zip"),
-            defaultextension=".zip", filetypes=[("Отладочная информация", "*.zip")])
+            defaultextension=".zip", filetypes=[(tr("Отладочная информация"), "*.zip")])
         if not path:
             return
         destination = available_output_path(Path(path))
-        self._run_task(lambda: export_diagnostics(destination), "Диагностика сохранена",
-            on_success=lambda result: messagebox.showinfo("Отладочная информация",
-                f"Архив сохранён: {result}\n\nВключены операции текущего запуска. "
+        self._run_task(lambda: export_diagnostics(destination), tr("Диагностика сохранена"),
+            on_success=lambda result: messagebox.showinfo(tr("Отладочная информация"),
+                tr(f"Архив сохранён: {result}\n\nВключены операции текущего запуска. "
                 "Для анализа задержки сначала повторите медленное распознавание, затем соберите отладочную информацию. "
-                "Документы и распознанный текст в архив не включаются.", parent=self), quiet=True)
+                "Документы и распознанный текст в архив не включаются."), parent=self), quiet=True)
 
     def _open_startup_paths(self, values) -> None:
         paths = [Path(value).expanduser() for value in values if Path(value).expanduser().is_file()]
@@ -9043,73 +9079,6 @@ class PdfCombinerApp(BaseTk):
             self.notebook.select(self.editor_tab)
             self._append_editor_files(supported)
 
-    def _show_whats_new(self, force: bool = False) -> None:
-        if not force and self.preferences.get("whats_new_version") == WHATS_NEW_RELEASE:
-            return
-        if self.grab_current():
-            self.after(500, lambda: self._show_whats_new(force=force))
-            return
-        dialog = tk.Toplevel(self)
-        dialog.title(f"Что нового в pdf bars {WHATS_NEW_RELEASE}")
-        dialog.configure(bg=PANEL)
-        dialog.transient(self)
-        dialog.resizable(False, False)
-        tk.Label(dialog, text=f"pdf bars {WHATS_NEW_RELEASE}: изменения в выпуске", bg=PANEL,
-                 fg=BLUE, font=(FONT_FAMILY, 16, "bold")).pack(anchor="w", padx=24, pady=(24, 12))
-        notes = (
-            "Открытая версия pdf bars\n"
-            "• Удалены корпоративные ресурсы, контакты и сбор статистики.\n"
-            "• Все документы и OCR обрабатываются локально.\n\n"
-            "Интерфейс и работа со страницами\n"
-            "• Добавлен новый облегчённый интерфейс и исправлены ошибки.\n"
-            "• Компактная светлая шапка и вкладки со значками освобождают место для документа.\n"
-            "• Флажок «Правки» показывает список изменений. Свойства появляются при выборе инструмента или объекта.\n"
-            "• Выбранные страницы выделяются синей рамкой и заливкой. В заголовке миниатюр доступны добавление и удаление.\n"
-            "• Цвет уже размещённой закрытой области можно изменить через палитру и отменить действие.\n\n"
-            "Руководство пользователя\n"
-            "• Руководство полностью переработано: инструкции "
-            "по всем основным функциям программы.\n"
-            "• Откройте его кнопкой «Открыть руководство пользователя» в разделе «О программе».\n\n"
-            "Общие улучшения программы\n"
-            "• Исправлены преобразование прозрачных изображений, обработка файлов с неверным расширением "
-            "и пути с домашним каталогом ~.\n"
-            "• Временные исходники редактора сохраняются в его рабочую сессию.\n"
-            "• Для недоступных или повреждённых файлов показываются понятные предупреждения "
-            "с дальнейшими действиями вместо технических ошибок."
-        )
-        body = tk.Frame(dialog, bg=PANEL)
-        body.pack(fill="both", expand=True, padx=24)
-        body.columnconfigure(0, weight=1)
-        body.rowconfigure(0, weight=1)
-        height = min(23, max(10, (self.winfo_screenheight() - 260) // 24))
-        text = tk.Text(body, wrap="word", width=76, height=height, bg=PANEL, fg=TEXT,
-                       font=(FONT_FAMILY, 11), relief="flat", borderwidth=0, highlightthickness=0,
-                       cursor="arrow", padx=0, pady=0)
-        text.grid(row=0, column=0, sticky="nsew")
-        scrollbar = ttk.Scrollbar(body, command=text.yview)
-        scrollbar.grid(row=0, column=1, sticky="ns", padx=(8, 0))
-        text.configure(yscrollcommand=scrollbar.set)
-        text.insert("1.0", notes)
-        text.tag_configure("heading", font=(FONT_FAMILY, 11, "bold"), foreground=DEEP_BLUE)
-        for heading in ("Интерфейс и работа со страницами", "Руководство пользователя", "Общие улучшения программы"):
-            start = text.search(heading, "1.0", stopindex="end")
-            if start:
-                text.tag_add("heading", start, f"{start}+{len(heading)}c")
-        text.configure(state="disabled")
-        def dismiss():
-            self.preferences["whats_new_version"] = WHATS_NEW_RELEASE
-            try:
-                save_preferences(self.preferences)
-            except OSError:
-                pass
-            dialog.destroy()
-        ttk.Button(dialog, text="Понятно", command=dismiss, style="Accent.TButton").pack(anchor="e", padx=24, pady=24)
-        dialog.protocol("WM_DELETE_WINDOW", dismiss)
-        dialog.update_idletasks()
-        x = self.winfo_rootx() + max(0, (self.winfo_width() - dialog.winfo_reqwidth()) // 2)
-        y = self.winfo_rooty() + max(0, (self.winfo_height() - dialog.winfo_reqheight()) // 2)
-        dialog.geometry(f"+{x}+{y}")
-        dialog.grab_set()
 
 
 def main(argv=None) -> int:
@@ -9123,7 +9092,6 @@ def main(argv=None) -> int:
         app.after_idle(app._offer_recovery)
     app.deiconify()
     app.after(50, app._activate_custom_chrome)
-    app.after(700, app._show_whats_new)
     app.mainloop()
     return 0
 

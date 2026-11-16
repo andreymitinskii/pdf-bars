@@ -1,3 +1,4 @@
+from source_text import source_text
 from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
@@ -56,7 +57,7 @@ def test_cups_print_job_uses_selected_options(tmp_path, monkeypatch):
 
 
 def test_gui_exposes_printing_in_pdf_and_editor_toolbars():
-    source = (ROOT / "src" / "redos_pdf_combiner" / "gui.py").read_text(encoding="utf-8")
+    source = source_text(ROOT / "src" / "redos_pdf_combiner" / "gui.py")
     pdf_tab = source.split("    def _pdf_tab(", 1)[1].split("    def _editor_tab(", 1)[0]
 
     assert pdf_tab.count("ttk.Button(") == 4

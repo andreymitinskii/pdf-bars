@@ -1,7 +1,9 @@
 [Desktop Entry]
 Type=Application
-Name=Создание ярлыка pdf bars
-Comment=Однократное создание ярлыка pdf bars на рабочем столе
+Name=Create pdf bars shortcut
+Name[ru]=Создание ярлыка pdf bars
+Comment=Create the pdf bars desktop shortcut once
+Comment[ru]=Однократное создание ярлыка pdf bars на рабочем столе
 Exec=/usr/libexec/pdf-bars-create-desktop-shortcut
 TryExec=/usr/libexec/pdf-bars-create-desktop-shortcut
 Terminal=false

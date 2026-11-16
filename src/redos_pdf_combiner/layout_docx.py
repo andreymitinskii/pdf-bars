@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .i18n import tr
+
 from bisect import bisect_right
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -218,7 +220,7 @@ def render_table_detection_images(
     output: List[bytes] = []
     with fitz.open(str(source)) as document:
         if document.page_count != len(pages):
-            raise ValueError("Количество распознанных страниц не совпадает с PDF")
+            raise ValueError(tr("Количество распознанных страниц не совпадает с PDF"))
         for page, text_page in zip(document, pages):
             pixmap = page.get_pixmap(matrix=fitz.Matrix(scale, scale), colorspace=fitz.csRGB, alpha=False)
             image = Image.frombytes("RGB", (pixmap.width, pixmap.height), pixmap.samples)
@@ -242,7 +244,7 @@ def render_clean_page_backgrounds(
     output: List[bytes] = []
     with fitz.open(str(source)) as document:
         if document.page_count != len(pages):
-            raise ValueError("Количество распознанных страниц не совпадает с PDF")
+            raise ValueError(tr("Количество распознанных страниц не совпадает с PDF"))
         for page, text_page in zip(document, pages):
             pixmap = page.get_pixmap(matrix=fitz.Matrix(scale, scale), colorspace=fitz.csRGB, alpha=False)
             image = Image.frombytes("RGB", (pixmap.width, pixmap.height), pixmap.samples)
@@ -265,11 +267,11 @@ def write_layout_docx(
     detect_tables: bool = True,
 ) -> Path:
     if not pages or len(pages) != len(page_images):
-        raise ValueError("Для DOCX требуются распознанные страницы и фон каждой страницы")
+        raise ValueError(tr("Для DOCX требуются распознанные страницы и фон каждой страницы"))
     if detect_tables and table_images is None:
         table_images = page_images
     if detect_tables and (table_images is None or len(pages) != len(table_images)):
-        raise ValueError("Для DOCX требуются изображения для анализа таблиц каждой страницы")
+        raise ValueError(tr("Для DOCX требуются изображения для анализа таблиц каждой страницы"))
     output_path = Path(output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 

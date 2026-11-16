@@ -820,11 +820,11 @@ def test_docx_save_recognizes_edited_document_not_search_cache(app, tmp_path, mo
     assert calls == [dict(dpi=350, language="rus")]
 
 
-def test_whats_new_acknowledgement_persists(tmp_path):
-    settings = dict(DEFAULT_PREFERENCES, whats_new_version="1.4")
+def test_interface_language_preference_persists(tmp_path):
+    settings = dict(DEFAULT_PREFERENCES, ui_language="en")
     path = tmp_path / "preferences.json"
     save_preferences(settings, path)
-    assert load_preferences(path)["whats_new_version"] == "1.4"
+    assert load_preferences(path)["ui_language"] == "en"
 
 
 def test_sidebar_thumbnails_resize_without_recreating_tiles(app, tmp_path, monkeypatch):
@@ -1091,19 +1091,17 @@ def test_regular_source_does_not_get_an_unnecessary_snapshot(app, tmp_path, monk
         assert app._retain_editor_source(source) == source
 
 
-def test_patch_update_notice_is_shown_once_after_application_version(app, monkeypatch):
-    monkeypatch.setitem(app.preferences, 'whats_new_version', '1.6')
-    app._show_whats_new()
-    dialog = next(w for w in app.winfo_children() if isinstance(w, gui.tk.Toplevel) and '1.7' in w.title())
-    try:
-        body = next(w for w in dialog.winfo_children() if isinstance(w, gui.tk.Frame))
-        text = next(w for w in body.winfo_children() if isinstance(w, gui.tk.Text))
-        assert 'Добавлен новый облегчённый интерфейс и исправлены ошибки' in text.get('1.0', 'end')
-        button = next(w for w in dialog.winfo_children() if isinstance(w, gui.ttk.Button))
-        button.invoke()
-        assert app.preferences['whats_new_version'] == '1.7'
-        app._show_whats_new()
-        assert not any(isinstance(w, gui.tk.Toplevel) and '1.7' in w.title() for w in app.winfo_children())
-    finally:
-        if dialog.winfo_exists():
-            dialog.destroy()
+def test_startup_has_no_release_popup(app):
+    assert not hasattr(gui.PdfCombinerApp, '_show_whats_new')
+    assert not any(isinstance(w, gui.tk.Toplevel) and 'Что нового' in w.title() for w in app.winfo_children())
+
+
+def test_language_selection_is_saved_without_discarding_document(app, monkeypatch):
+    saved=[]
+    monkeypatch.setattr(gui,'save_preferences',lambda settings:saved.append(dict(settings)))
+    document=app.editor_pdf_path
+    app.ui_language_box.current(2)
+    app._change_ui_language()
+    assert saved[-1]['ui_language']=='en'
+    assert app.editor_pdf_path==document
+    assert 'Перезапустите' in app.status.get()

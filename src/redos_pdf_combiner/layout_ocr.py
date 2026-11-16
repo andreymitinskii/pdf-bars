@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .i18n import tr
+
 from pathlib import Path
 from typing import Callable, List, Sequence
 
@@ -35,13 +37,13 @@ def source_to_layout_ocr_docx(
     if not source_path.is_file():
         raise FileNotFoundError(str(source_path))
     if output_path.suffix.lower() != ".docx":
-        raise ValueError("Выходной файл должен иметь расширение .docx")
+        raise ValueError(tr("Выходной файл должен иметь расширение .docx"))
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     if text_index is None:
         def page_progress(current: int, total: int, _used_ocr: bool) -> None:
             if progress:
-                progress(current, total + 1, f"Распознавание: {source_path.name}")
+                progress(current, total + 1, tr(f"Распознавание: {source_path.name}"))
 
         pages = build_text_index(
             source_path,
@@ -54,14 +56,14 @@ def source_to_layout_ocr_docx(
     else:
         pages = list(text_index)
     if not pages:
-        raise ValueError("Документ не содержит страниц")
+        raise ValueError(tr("Документ не содержит страниц"))
 
     with diagnostics.stage("layout_sanitize"):
         pages = sanitize_layout_pages(pages, language)
     with diagnostics.stage("colored_ink_filter"):
         pages = exclude_colored_ink_words(source_path, pages)
     if progress and detect_tables:
-        progress(len(pages), len(pages) + 1, f"Анализ таблиц: {source_path.name}")
+        progress(len(pages), len(pages) + 1, tr(f"Анализ таблиц: {source_path.name}"))
     # Text removal is needed only for an optional page background. It erases
     # parts of a ruled grid, so table geometry must be detected from the
     # untouched scan.
@@ -84,7 +86,7 @@ def source_to_layout_ocr_docx(
             detect_tables=detect_tables,
         )
     if progress:
-        progress(len(pages) + 1, len(pages) + 1, f"Готово: {source_path.name}")
+        progress(len(pages) + 1, len(pages) + 1, tr(f"Готово: {source_path.name}"))
     return result
 
 
@@ -99,7 +101,7 @@ def pdfs_to_layout_ocr_docx(
     progress: LayoutProgress | None = None,
 ) -> List[Path]:
     if not documents:
-        raise ValueError("Нужно выбрать хотя бы один PDF")
+        raise ValueError(tr("Нужно выбрать хотя бы один PDF"))
     destination = Path(output_dir)
     destination.mkdir(parents=True, exist_ok=True)
     import fitz
@@ -116,14 +118,14 @@ def pdfs_to_layout_ocr_docx(
     completed_pages = 0
     for source in sources:
         if source.suffix.lower() != ".pdf":
-            raise ValueError(f"Неподдерживаемый формат документа: {source}")
+            raise ValueError(tr(f"Неподдерживаемый формат документа: {source}"))
         if not source.is_file():
             raise FileNotFoundError(str(source))
         output = available_output_path(destination / f"{source.stem}_ocr.docx")
 
         def page_progress(current: int, _total: int, _used_ocr: bool) -> None:
             if progress:
-                progress(completed_pages + current, total_pages, f"Распознавание: {source.name}")
+                progress(completed_pages + current, total_pages, tr(f"Распознавание: {source.name}"))
 
         pages = build_text_index(
             source,
@@ -145,7 +147,7 @@ def pdfs_to_layout_ocr_docx(
         outputs.append(output)
         completed_pages += len(pages)
         if progress:
-            progress(completed_pages, total_pages, f"Готово: {source.name}")
+            progress(completed_pages, total_pages, tr(f"Готово: {source.name}"))
     return outputs
 
 
@@ -161,12 +163,12 @@ def create_searchable_pdf(
     source_path = Path(source)
     output_path = Path(output)
     if source_path.suffix.lower() != ".pdf" or not source_path.is_file():
-        raise ValueError("Для распознавания требуется существующий PDF-файл")
+        raise ValueError(tr("Для распознавания требуется существующий PDF-файл"))
     if not 150 <= int(dpi) <= 400:
-        raise ValueError("DPI распознавания должен быть от 150 до 400")
+        raise ValueError(tr("DPI распознавания должен быть от 150 до 400"))
     models = tessdata_path()
     if not ocr_models_available(models, language):
-        raise RuntimeError("Не найдены встроенные модели OCR для выбранного языка")
+        raise RuntimeError(tr("Не найдены встроенные модели OCR для выбранного языка"))
     output_path.parent.mkdir(parents=True, exist_ok=True)
     scale = float(dpi) / 72.0
 
@@ -174,7 +176,7 @@ def create_searchable_pdf(
     try:
         with fitz.open(str(source_path)) as document:
             if document.page_count == 0:
-                raise ValueError("PDF не содержит страниц")
+                raise ValueError(tr("PDF не содержит страниц"))
             for page in document:
                 pixmap = page.get_pixmap(matrix=fitz.Matrix(scale, scale), colorspace=fitz.csRGB, alpha=False)
                 ocr_bytes = ocr_pixmap_to_pdf(
@@ -187,8 +189,8 @@ def create_searchable_pdf(
                     target = searchable.new_page(width=page.rect.width, height=page.rect.height)
                     target.show_pdf_page(target.rect, ocr_page_document, 0)
             metadata = document.metadata or {}
-            metadata["producer"] = f"pdf bars {__version__} — полное OCR перед DOCX"
-            metadata["keywords"] = "OCR; русский; английский; редактируемый DOCX"
+            metadata["producer"] = tr(f"pdf bars {__version__} — полное OCR перед DOCX")
+            metadata["keywords"] = tr("OCR; русский; английский; редактируемый DOCX")
             searchable.set_metadata(metadata)
         searchable.save(str(output_path), garbage=4, deflate=True, clean=True)
     finally:

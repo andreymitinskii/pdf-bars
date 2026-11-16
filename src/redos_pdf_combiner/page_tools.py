@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .i18n import tr
+
 import math
 import os
 from dataclasses import replace
@@ -17,13 +19,13 @@ def arrange_pdf_pages(source, output, order, rotations=None) -> Path:
     output = Path(output)
     source = input_path(source)
     if source.resolve() == output.resolve():
-        raise ValueError("Сохраните результат под новым именем")
+        raise ValueError(tr("Сохраните результат под новым именем"))
     if not order:
-        raise ValueError("В документе должна остаться хотя бы одна страница")
+        raise ValueError(tr("В документе должна остаться хотя бы одна страница"))
     output.parent.mkdir(parents=True, exist_ok=True)
     with open_pdf_input(source) as document:
         if any(index < 0 or index >= document.page_count for index in order):
-            raise IndexError("Страница не существует")
+            raise IndexError(tr("Страница не существует"))
         document.select(list(order))
         for index, angle in (rotations or {}).items():
             document[index].set_rotation((document[index].rotation + angle) % 360)
@@ -54,7 +56,7 @@ def combine_editor_sources(
     import fitz
 
     if not inputs:
-        raise ValueError("Нужно выбрать хотя бы один PDF или изображение")
+        raise ValueError(tr("Нужно выбрать хотя бы один PDF или изображение"))
     output = Path(output_pdf)
     output.parent.mkdir(parents=True, exist_ok=True)
     result = fitz.open()
@@ -63,7 +65,7 @@ def combine_editor_sources(
             with open_pdf_input(value) as document:
                 result.insert_pdf(document)
         if result.page_count == 0:
-            raise ValueError("В выбранных файлах нет страниц")
+            raise ValueError(tr("В выбранных файлах нет страниц"))
         result.save(str(output), garbage=4, deflate=True, clean=True)
     finally:
         result.close()
@@ -80,13 +82,13 @@ def split_long_pdf_pages(
     import fitz
 
     if page_size not in PAGE_SIZES:
-        raise ValueError(f"Неизвестный размер страницы: {page_size}")
+        raise ValueError(tr(f"Неизвестный размер страницы: {page_size}"))
     source = Path(input_pdf)
     output = Path(output_pdf)
     if not source.is_file() or source.suffix.lower() != ".pdf":
-        raise ValueError("Для разрезания требуется существующий PDF")
+        raise ValueError(tr("Для разрезания требуется существующий PDF"))
     if source.resolve() == output.resolve():
-        raise ValueError("Сохраните разрезанный документ под новым именем")
+        raise ValueError(tr("Сохраните разрезанный документ под новым именем"))
     output.parent.mkdir(parents=True, exist_ok=True)
 
     result = fitz.open()
@@ -113,7 +115,7 @@ def split_long_pdf_pages(
                     destination = fitz.Rect(0, 0, target_width, min(target_height, visible_height))
                     target.show_pdf_page(destination, document, page_index, clip=clip, keep_proportion=False)
         metadata = result.metadata or {}
-        metadata["producer"] = f"pdf bars — разрезание на {page_size}"
+        metadata["producer"] = tr(f"pdf bars — разрезание на {page_size}")
         result.set_metadata(metadata)
         result.save(str(output), garbage=4, deflate=True, clean=True)
     finally:
@@ -133,9 +135,9 @@ def delete_pdf_page(
     output.parent.mkdir(parents=True, exist_ok=True)
     with fitz.open(str(source)) as document:
         if document.page_count <= 1:
-            raise ValueError("Нельзя удалить единственную страницу документа")
+            raise ValueError(tr("Нельзя удалить единственную страницу документа"))
         if not 0 <= int(page_index) < document.page_count:
-            raise IndexError("Страница для удаления не существует")
+            raise IndexError(tr("Страница для удаления не существует"))
         document.delete_page(int(page_index))
         document.save(str(output), garbage=4, deflate=True, clean=True)
     return output

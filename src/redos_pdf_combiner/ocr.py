@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .i18n import tr
+
 import re
 import os
 import threading
@@ -80,7 +82,7 @@ def build_text_index(
 
     model_dir = Path(tessdata) if tessdata is not None else tessdata_path()
     if force_ocr and not ocr_models_available(model_dir, language):
-        raise RuntimeError("Не найдена встроенная модель выбранного языка OCR")
+        raise RuntimeError(tr("Не найдена встроенная модель выбранного языка OCR"))
 
     pages_by_index: dict[int, PageText] = {}
     ocr_page_indexes: list[int] = []
@@ -88,7 +90,7 @@ def build_text_index(
     with fitz.open(str(source)) as document:
         indexes = list(range(document.page_count)) if page_indexes is None else sorted(set(page_indexes))
         if any(index < 0 or index >= document.page_count for index in indexes):
-            raise IndexError("Страница для распознавания не существует")
+            raise IndexError(tr("Страница для распознавания не существует"))
         total = len(indexes)
         diagnostics.note(source_pages=document.page_count, requested_pages=total)
         for page_index in indexes:
@@ -97,7 +99,7 @@ def build_text_index(
             use_ocr = force_ocr or not _contains_meaningful_text(native_words)
             if use_ocr:
                 if not ocr_models_available(model_dir, language):
-                    raise RuntimeError("Не найдена встроенная модель выбранного языка OCR")
+                    raise RuntimeError(tr("Не найдена встроенная модель выбранного языка OCR"))
                 ocr_page_indexes.append(page_index)
                 largest_raster = max(largest_raster, int(page.rect.width * page.rect.height * (dpi / 72.0) ** 2))
             else:
@@ -283,7 +285,7 @@ def _recognize_word_region_worker(
         if selected and not has_page_scan:
             return PageText(page_index, width, height, tuple(_indexed_words(selected)), False)
         if not ocr_models_available(model_dir, language):
-            raise RuntimeError("Не найдена встроенная модель выбранного языка OCR")
+            raise RuntimeError(tr("Не найдена встроенная модель выбранного языка OCR"))
         rotation = page.rotation_matrix
         source_point = fitz.Point(x, y) * page.derotation_matrix
         if page.rotation:
@@ -545,8 +547,8 @@ def _raise_clear_ocr_error(exc: Exception) -> None:
     details = str(exc).casefold()
     if "ocr initialisation failed" in details or "leptonica from 2 threads" in details:
         raise RuntimeError(
-            "Не удалось запустить модуль распознавания текста. "
-            "Повторите операцию; если ошибка сохранится, переустановите pdf bars."
+            tr("Не удалось запустить модуль распознавания текста. "
+            "Повторите операцию; если ошибка сохранится, переустановите pdf bars.")
         ) from exc
 
 

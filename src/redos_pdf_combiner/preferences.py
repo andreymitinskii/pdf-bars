@@ -11,6 +11,7 @@ from .storage import atomic_write_text_if_changed
 
 
 DEFAULT_PREFERENCES: Dict[str, Any] = {
+    "ui_language": "auto",
     "last_folder": "",
     "pdf_image_format": "jpg",
     "editor_font_family": "Times New Roman",
@@ -22,7 +23,6 @@ DEFAULT_PREFERENCES: Dict[str, Any] = {
     "document_ocr_language": "rus",
     "document_ocr_preserve_graphics": False,
     "recent_files": [],
-    "whats_new_version": "",
     "word_style_presets": {},
 }
 

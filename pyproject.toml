@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdf-bars"
-version = "1.7"
+version = "1.7.1"
 description = "pdf bars toolkit for RED OS 7.3 and RED OS 8"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -26,4 +26,4 @@ pdf-bars-gui = "redos_pdf_combiner.launcher:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-redos_pdf_combiner = ["assets/*.png", "assets/tessdata/*.traineddata", "assets/tessdata/LICENSE", "assets/tessdata/SOURCE.txt"]
+redos_pdf_combiner = ["assets/*.png", "assets/tessdata/*.traineddata", "assets/tessdata/LICENSE", "assets/tessdata/SOURCE.txt", "locales/*.json"]

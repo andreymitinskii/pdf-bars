@@ -1,5 +1,5 @@
 Name:           pdf-bars
-Version:        1.7
+Version:        1.7.1
 Release:        1
 Summary:        pdf bars utility toolkit for RED OS
 License:        AGPL-3.0-or-later
@@ -113,5 +113,8 @@ fi
 %{_datadir}/icons/hicolor/*/apps/pdf-bars.png
 
 %changelog
+* Mon Nov 16 2026 pdf bars contributors - 1.7.1-1
+- Add Russian/English interface selection and remove the startup release popup.
+
 * Mon Nov 16 2026 pdf bars contributors - 1.7-1
 - Public local-only release without corporate branding or statistics.

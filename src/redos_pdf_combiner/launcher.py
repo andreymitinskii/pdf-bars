@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .i18n import tr
+
 import importlib
 import os
 import queue
@@ -197,7 +199,7 @@ def main(argv=None) -> int:
             icon = None
 
     tk.Label(splash, text="pdf bars", bg=DEEP_BLUE, fg="white", font=("Arial", 23, "bold")).place(x=130, y=31)
-    status = tk.StringVar(value="Загрузка компонентов...")
+    status = tk.StringVar(value=tr("Загрузка компонентов..."))
     tk.Label(splash, textvariable=status, bg=DEEP_BLUE, fg="#D8EFFB", font=("Arial", 10)).place(x=132, y=76)
     style = ttk.Style(splash)
     style.configure("Splash.Horizontal.TProgressbar", troughcolor="#D8EAF4", background=CYAN)
@@ -208,7 +210,7 @@ def main(argv=None) -> int:
 
     result_queue: queue.Queue = queue.Queue()
     threading.Thread(target=_load_gui, args=(result_queue,), daemon=True).start()
-    status_after_id = splash.after(650, lambda: status.set("Подготовка интерфейса..."))
+    status_after_id = splash.after(650, lambda: status.set(tr("Подготовка интерфейса...")))
 
     result = {}
 
@@ -234,10 +236,10 @@ def main(argv=None) -> int:
         splash.destroy()
         root = tk.Tk()
         root.withdraw()
-        messagebox.showerror("pdf bars", f"Не удалось запустить приложение:\n{result.get('value')}")
+        messagebox.showerror("pdf bars", tr(f"Не удалось запустить приложение:\n{result.get('value')}"))
         root.destroy()
         return 1
-    status.set("Подготовка рабочего окна...")
+    status.set(tr("Подготовка рабочего окна..."))
     splash.update_idletasks()
     splash.destroy()
     return result["value"].main(startup_paths)

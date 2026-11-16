@@ -11,8 +11,10 @@ assets = source / "redos_pdf_combiner" / "assets"
 datas = [
     (str(assets), "redos_pdf_combiner/assets"),
     (str(project / "docs" / "PDF_Bars_User_Guide.pdf"), "docs"),
+    (str(project / "docs" / "PDF_Bars_User_Guide_en.pdf"), "docs"),
 ]
 datas += collect_data_files("tkinterdnd2")
+datas += [(str(source / "redos_pdf_combiner" / "locales"), "redos_pdf_combiner/locales")]
 datas += [(str(project / "LICENSE"), "."), (str(project / "THIRD_PARTY_NOTICES.md"), ".")]
 
 a = Analysis(

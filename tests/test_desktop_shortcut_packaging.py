@@ -1,3 +1,4 @@
+from source_text import source_text
 from pathlib import Path
 import re
 
@@ -6,9 +7,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_desktop_shortcut_is_packaged_for_install_and_first_login():
-    helper = (ROOT / "packaging" / "pdf-bars-create-desktop-shortcut.sh").read_text(encoding="utf-8")
-    autostart = (ROOT / "packaging" / "pdf-bars-create-shortcut.desktop").read_text(encoding="utf-8")
-    spec = (ROOT / "packaging" / "pdf-bars.spec").read_text(encoding="utf-8")
+    helper = source_text(ROOT / "packaging" / "pdf-bars-create-desktop-shortcut.sh")
+    autostart = source_text(ROOT / "packaging" / "pdf-bars-create-shortcut.desktop")
+    spec = source_text(ROOT / "packaging" / "pdf-bars.spec")
 
     assert "xdg-user-dir DESKTOP" in helper
     assert "pdf bars.desktop" in helper
@@ -25,19 +26,19 @@ def test_desktop_shortcut_is_packaged_for_install_and_first_login():
 
 
 def test_application_version_is_consistent():
-    assert '__version__ = "1.7"' in (ROOT / "src" / "redos_pdf_combiner" / "__init__.py").read_text(encoding="utf-8")
-    assert 'version = "1.7"' in (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    assert '__version__ = "1.7.1"' in source_text(ROOT / "src" / "redos_pdf_combiner" / "__init__.py")
+    assert 'version = "1.7.1"' in source_text(ROOT / "pyproject.toml")
 
 
 
 
 def test_rpm_build_uses_the_requested_isolated_topdir():
-    build_script = (ROOT / "scripts" / "build-redos-rpm.sh").read_text(encoding="utf-8")
+    build_script = source_text(ROOT / "scripts" / "build-redos-rpm.sh")
     assert 'rpmbuild --define "_topdir $BUILD_ROOT"' in build_script
 
 
 def test_desktop_entry_registers_supported_files():
-    desktop = (ROOT / "packaging" / "pdf-bars.desktop").read_text(encoding="utf-8")
+    desktop = source_text(ROOT / "packaging" / "pdf-bars.desktop")
     assert "Exec=pdf-bars-gui %F" in desktop
     assert "StartupNotify=false" in desktop
     assert "MimeType=application/pdf;" in desktop
@@ -45,7 +46,7 @@ def test_desktop_entry_registers_supported_files():
 
 
 def test_pdf_toolbar_is_compact_and_page_actions_are_in_context_menu():
-    source = (ROOT / "src" / "redos_pdf_combiner" / "gui.py").read_text(encoding="utf-8")
+    source = source_text(ROOT / "src" / "redos_pdf_combiner" / "gui.py")
     editor = source.split("    def _editor_tab(", 1)[1].split("    def _images_tab(", 1)[0]
     context_menu = source.split("    def _show_editor_thumbnail_context_menu(", 1)[1].split("    def _toggle_editor_grid(", 1)[0]
 
@@ -63,8 +64,8 @@ def test_pdf_toolbar_is_compact_and_page_actions_are_in_context_menu():
 
 
 def test_ocr_docx_is_available_in_editor_documents_and_cli():
-    gui = (ROOT / "src" / "redos_pdf_combiner" / "gui.py").read_text(encoding="utf-8")
-    cli = (ROOT / "src" / "redos_pdf_combiner" / "cli.py").read_text(encoding="utf-8")
+    gui = source_text(ROOT / "src" / "redos_pdf_combiner" / "gui.py")
+    cli = source_text(ROOT / "src" / "redos_pdf_combiner" / "cli.py")
 
     assert '("Word DOCX с распознанным текстом", "*.docx")' in gui
     assert 'text="Предварительно распознать текст"' in gui
@@ -78,8 +79,8 @@ def test_ocr_docx_is_available_in_editor_documents_and_cli():
 
 
 def test_gui_launcher_uses_immediate_splash_screen():
-    spec = (ROOT / "packaging" / "pdf-bars.spec").read_text(encoding="utf-8")
-    launcher = (ROOT / "src" / "redos_pdf_combiner" / "launcher.py").read_text(encoding="utf-8")
+    spec = source_text(ROOT / "packaging" / "pdf-bars.spec")
+    launcher = source_text(ROOT / "src" / "redos_pdf_combiner" / "launcher.py")
     assert "redos_pdf_combiner.launcher" in spec
     assert 'text="pdf bars"' in launcher
     assert 'value="Загрузка компонентов..."' in launcher
@@ -88,7 +89,7 @@ def test_gui_launcher_uses_immediate_splash_screen():
 
 
 def test_modern_interface_uses_flat_tabs_and_original_brand_assets():
-    source = (ROOT / "src" / "redos_pdf_combiner" / "gui.py").read_text(encoding="utf-8")
+    source = source_text(ROOT / "src" / "redos_pdf_combiner" / "gui.py")
     assert "class TabWorkspace" in source
     assert 'button.configure(bg=BLUE, fg="white"' in source
     assert 'APP_ICON_PATH = Path(__file__).with_name("assets") / "pdf-bars-transparent.png"' in source
@@ -106,7 +107,7 @@ def test_modern_interface_uses_flat_tabs_and_original_brand_assets():
 
 
 def test_all_file_drop_states_match_pdf_editor_drop_zone():
-    source = (ROOT / "src" / "redos_pdf_combiner" / "gui.py").read_text(encoding="utf-8")
+    source = source_text(ROOT / "src" / "redos_pdf_combiner" / "gui.py")
     drop_state = source.split("    def _create_file_drop_state(", 1)[1].split("    def _sync_file_drop_states", 1)[0]
 
     assert "create_rounded_card(" in drop_state
@@ -128,7 +129,7 @@ def test_new_application_logo_has_real_transparency():
 
 
 def test_modern_tabs_use_inset_rounded_card_shells():
-    source = (ROOT / "src" / "redos_pdf_combiner" / "gui.py").read_text(encoding="utf-8")
+    source = source_text(ROOT / "src" / "redos_pdf_combiner" / "gui.py")
 
     assert "def create_rounded_card(" in source
     assert 'body.pack(fill="both", expand=True, padx=padding, pady=padding)' in source
@@ -175,7 +176,7 @@ def test_maximize_selects_monitor_containing_window_center():
 
 
 def test_custom_maximize_does_not_use_virtual_desktop_width_directly():
-    source = (ROOT / "src" / "redos_pdf_combiner" / "gui.py").read_text(encoding="utf-8")
+    source = source_text(ROOT / "src" / "redos_pdf_combiner" / "gui.py")
     maximize = source.split("    def _toggle_maximize_window(", 1)[1].split("\n    def ", 1)[0]
 
     assert "_monitor_geometry_for_point" in maximize
