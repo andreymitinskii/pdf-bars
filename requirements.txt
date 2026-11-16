@@ -1,0 +1,5 @@
+pypdf>=3.17,<6
+Pillow>=10,<11
+PyMuPDF>=1.24,<1.25
+tkinterdnd2>=0.4,<0.6
+typing_extensions>=4.8,<5

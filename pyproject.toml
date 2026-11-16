@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pdf-bars"
+version = "1.7"
+description = "pdf bars toolkit for RED OS 7.3 and RED OS 8"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "AGPL-3.0-or-later"}
+authors = [{name = "pdf bars contributors"}]
+dependencies = [
+  "pypdf>=3.17,<6",
+  "Pillow>=10,<11",
+  "PyMuPDF>=1.24,<1.25",
+  "tkinterdnd2>=0.4,<0.6",
+  "typing_extensions>=4.8,<5"
+]
+
+[project.scripts]
+pdf-bars = "redos_pdf_combiner.cli:main"
+pdf-bars-gui = "redos_pdf_combiner.launcher:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+redos_pdf_combiner = ["assets/*.png", "assets/tessdata/*.traineddata", "assets/tessdata/LICENSE", "assets/tessdata/SOURCE.txt"]

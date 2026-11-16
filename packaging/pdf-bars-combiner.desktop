@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=pdf bars
+Name[ru]=pdf bars
+Name[ru_RU]=pdf bars
+GenericName=PDF-инструмент
+GenericName[ru]=PDF-инструмент
+Comment=PDF-инструмент с миниатюрами страниц, DnD, изображениями и DOCX
+Exec=pdf-bars-gui
+Icon=pdf-bars
+Terminal=false
+Categories=Office;Utility;
+Keywords=PDF;Барс;merge;compress;images;
+StartupNotify=true

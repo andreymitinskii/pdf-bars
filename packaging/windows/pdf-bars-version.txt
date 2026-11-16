@@ -1,0 +1,30 @@
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(1, 7, 0, 0),
+    prodvers=(1, 7, 0, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo([
+      StringTable(
+        u'041904B0',
+        [
+          StringStruct(u'CompanyName', u'pdf bars contributors'),
+          StringStruct(u'FileDescription', u'pdf bars'),
+          StringStruct(u'FileVersion', u'1.7'),
+          StringStruct(u'InternalName', u'pdf-bars'),
+          StringStruct(u'LegalCopyright', u'Митинский А.А.'),
+          StringStruct(u'OriginalFilename', u'pdf-bars.exe'),
+          StringStruct(u'ProductName', u'pdf bars'),
+          StringStruct(u'ProductVersion', u'1.7')
+        ]
+      )
+    ]),
+    VarFileInfo([VarStruct(u'Translation', [0x0419, 1200])])
+  ]
+)

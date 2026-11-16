@@ -1,0 +1,8 @@
+OCR language models are from the official Tesseract repositories:
+
+- rus.traineddata: high-accuracy model from tessdata_best
+  https://github.com/tesseract-ocr/tessdata_best
+- eng.traineddata: compact model from tessdata
+  https://github.com/tesseract-ocr/tessdata
+
+The models are licensed under Apache-2.0. See LICENSE in this directory.
