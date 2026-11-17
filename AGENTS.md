@@ -1,5 +1,13 @@
 # pdf bars engineering guide
 
+## Branch Boundary
+
+This checkout is the public `release/1.7` line (`pdf-bars`, version 1.7.1).
+Never mark a build here as 1.6 or add corporate reporting, logos or contacts.
+Corporate `release/1.6` lives separately at `C:\Project\pdf-bars-1.6`, using
+the `redos-pdf-bars` package and its own remote. Do not cross-publish sources.
+Public settings/cache use PDFBarsPublic / pdf-bars-public, separate from 1.6.
+
 Public local-only edition. Keep all OCR and documents local. Do not add analytics,
 report uploaders, corporate assets or internal addresses. The explicitly approved
 developer attribution in About is Mitinskiy A.A., andreymitinskii@gmail.com.

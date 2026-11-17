@@ -34,9 +34,9 @@ MAX_WORKSPACE_CACHE_BYTES = 2 * 1024 * 1024 * 1024
 
 def app_cache_dir(*parts: str) -> Path:
     if os.name == "nt":
-        root = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local")) / "PDFBars"
+        root = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local")) / "PDFBarsPublic"
     else:
-        root = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "pdf-bars"
+        root = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "pdf-bars-public"
     destination = root.joinpath(*parts)
     destination.mkdir(parents=True, exist_ok=True)
     return destination

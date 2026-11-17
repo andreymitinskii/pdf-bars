@@ -14,16 +14,17 @@ import traceback
 from dataclasses import asdict, dataclass, replace
 from io import BytesIO
 from pathlib import Path
-from tkinter import colorchooser, filedialog, messagebox, simpledialog, ttk
+from tkinter import colorchooser, messagebox, simpledialog, ttk
 
 from PIL import Image, ImageChops, ImageDraw, ImageOps, ImageTk
 from pypdf import PdfReader, PdfWriter
 
 from . import __version__
+from . import file_dialogs as filedialog
 from .i18n import tr, get_language
 from .pdf_standards import declared_pdfa
 from .blank_pages import create_blank_pdf
-from .clipboard import decode_clipboard_payload, encode_clipboard_payload, new_clipboard_image_path
+from .clipboard import copy_image_to_system_clipboard, decode_clipboard_payload, encode_clipboard_payload, new_clipboard_image_path
 from .converters import available_output_path, docx_to_pdf, images_to_individual_pdfs, images_to_pdf, pdf_to_docx, pdf_to_images
 from .core import (
     BatchTargetCompressionResult,
@@ -8738,6 +8739,17 @@ class PdfCombinerApp(BaseTk):
 
     def _write_editor_clipboard(self, payload: dict) -> None:
         self.editor_clipboard = payload
+        self.editor_clipboard_image_local_only = False
+        if payload.get("kind") == "image":
+            try:
+                copy_image_to_system_clipboard(Path(payload["data"]["image_path"]), self.winfo_id())
+            except (OSError, subprocess.SubprocessError):
+                self.editor_clipboard_image_local_only = True
+                messagebox.showwarning(tr("Буфер обмена"), tr(
+                    "Не удалось скопировать изображение в системный буфер. "
+                    "Для RED OS установите xclip (X11) или wl-clipboard (Wayland). "
+                    "Вставка внутри редактора доступна."), parent=self)
+            return
         value = encode_clipboard_payload(payload)
         try:
             self.clipboard_clear()
@@ -8747,8 +8759,18 @@ class PdfCombinerApp(BaseTk):
             pass
 
     def _read_editor_clipboard(self) -> dict | None:
+        if getattr(self, "editor_clipboard_image_local_only", False):
+            return self.editor_clipboard
+        if sys.platform != "win32" and self.editor_clipboard and self.editor_clipboard.get("kind") == "image":
+            try:
+                targets = self.selection_get(selection="CLIPBOARD", type="TARGETS")
+                if "image/png" in self.tk.splitlist(targets):
+                    return self.editor_clipboard
+            except tk.TclError:
+                pass
         try:
-            value = self.clipboard_get()
+            # Some Tk/X11 versions return PNG bytes as a Tcl string by default.
+            value = self.clipboard_get(type="UTF8_STRING") if sys.platform != "win32" else self.clipboard_get()
         except tk.TclError:
             return self.editor_clipboard
         return decode_clipboard_payload(value)

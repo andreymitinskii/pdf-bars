@@ -14,6 +14,9 @@ Requires:       python3 >= 3.8
 Requires:       python3-tkinter
 Requires:       ghostscript
 Requires:       cups-client
+Requires:       python3-gobject-base
+Requires:       gtk3
+Conflicts:      redos-pdf-bars
 
 %description
 Desktop and command-line PDF toolkit for RED OS: arrange and rotate pages,
@@ -77,22 +80,9 @@ fi
 /usr/bin/getent passwd 2>/dev/null | /usr/bin/awk -F: '$3 >= 1000 && $6 ~ /^\// && $7 !~ /(nologin|false)$/ { print $1 ":" $3 ":" $6 }' | while IFS=: read -r username uid home; do
     [ -n "$username" ] && [ -n "$uid" ] && [ -n "$home" ] || continue
     [ -d "$home" ] || continue
-    group=$(/usr/bin/id -gn "$username" 2>/dev/null || true)
-    [ -n "$group" ] || continue
-    desktop_dir=""
-    for candidate in "$home/Рабочий стол" "$home/Desktop"; do
-      if [ -d "$candidate" ]; then
-        desktop_dir="$candidate"
-        break
-      fi
-    done
-    [ -n "$desktop_dir" ] || desktop_dir="$home/Desktop"
-    shortcut="$desktop_dir/pdf bars.desktop"
-    if [ ! -e "$shortcut" ] || /usr/bin/grep -q '^Exec=pdf-bars-gui' "$shortcut" 2>/dev/null; then
-      /usr/bin/install -d -m 0755 -o "$username" -g "$group" "$desktop_dir" 2>/dev/null || continue
-      /usr/bin/install -m 0755 -o "$username" -g "$group" \
-        %{_datadir}/applications/pdf-bars.desktop "$shortcut" 2>/dev/null || true
-    fi
+    /usr/sbin/runuser -u "$username" -- /usr/bin/env -u XDG_CONFIG_HOME -u XDG_CACHE_HOME \
+        -u DBUS_SESSION_BUS_ADDRESS -u XDG_RUNTIME_DIR HOME="$home" \
+        %{_libexecdir}/pdf-bars-create-desktop-shortcut >/dev/null 2>&1 || true
   done
 
 %postun

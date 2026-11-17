@@ -11,15 +11,16 @@ def test_desktop_shortcut_is_packaged_for_install_and_first_login():
     autostart = source_text(ROOT / "packaging" / "pdf-bars-create-shortcut.desktop")
     spec = source_text(ROOT / "packaging" / "pdf-bars.spec")
 
-    assert "xdg-user-dir DESKTOP" in helper
-    assert "pdf bars.desktop" in helper
-    assert "metadata::trusted true" in helper
-    assert "desktop-shortcut-1.7" in helper
+    migration = source_text(ROOT / "src/redos_pdf_combiner/desktop_shortcut.py")
+    assert '"xdg-user-dir", "DESKTOP"' in migration
+    assert "pdf bars.desktop" in migration
+    assert "metadata::trusted" in migration
+    assert "desktop_shortcut.py" in helper
     assert "Exec=/usr/libexec/pdf-bars-create-desktop-shortcut" in autostart
     assert "NoDisplay=true" in autostart
     assert "getent passwd" in spec
-    assert "install -d -m 0755" in spec
-    assert '"$desktop_dir/pdf bars.desktop"' in spec
+    assert 'runuser -u "$username"' in spec
+    assert "Conflicts:      redos-pdf-bars" in spec
     assert "%{_sysconfdir}/xdg/autostart/pdf-bars-create-shortcut.desktop" in spec
 
 

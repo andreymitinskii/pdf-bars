@@ -816,5 +816,9 @@
   "цветной": "color",
   "черно-белый": "black-and-white",
   "чёрно-белый": "black-and-white",
-  "ⓘ  Рабочая область пуста": "ⓘ  Workspace is empty"
+  "ⓘ  Рабочая область пуста": "ⓘ  Workspace is empty",
+  "Буфер обмена": "Clipboard",
+  "Сохранить": "Save",
+  "Файл уже существует. Заменить его?": "The file already exists. Replace it?",
+  "Не удалось скопировать изображение в системный буфер. Для RED OS установите xclip (X11) или wl-clipboard (Wayland). Вставка внутри редактора доступна.": "Could not copy the image to the system clipboard. On RED OS, install xclip (X11) or wl-clipboard (Wayland). Pasting within the editor is available."
 }

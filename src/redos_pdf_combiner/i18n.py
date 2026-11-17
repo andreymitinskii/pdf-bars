@@ -39,9 +39,9 @@ def _initial_language() -> str:
     if override in {'ru', 'en'}:
         return override
     if os.name == 'nt':
-        root = Path(os.environ.get('APPDATA', Path.home() / 'AppData/Roaming')) / 'PDFBars'
+        root = Path(os.environ.get('APPDATA', Path.home() / 'AppData/Roaming')) / 'PDFBarsPublic'
     else:
-        root = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config')) / 'pdf-bars'
+        root = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config')) / 'pdf-bars-public'
     try:
         settings = json.loads((root / 'settings.json').read_text(encoding='utf-8'))
         preference = settings.get('ui_language', 'auto') if isinstance(settings, dict) else 'auto'

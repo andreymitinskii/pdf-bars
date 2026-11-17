@@ -56,9 +56,9 @@ def normalize_word_styles(value) -> Dict[str, Any]:
 
 def preferences_path() -> Path:
     if os.name == "nt":
-        root = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming")) / "PDFBars"
+        root = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming")) / "PDFBarsPublic"
     else:
-        root = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "pdf-bars"
+        root = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "pdf-bars-public"
     return root / "settings.json"
 
 
