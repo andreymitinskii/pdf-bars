@@ -2,7 +2,7 @@
 
 ## Branch Boundary
 
-This checkout is the public `release/1.7` line (`pdf-bars`, version 1.7.1).
+This checkout is the public `release/1.7` line (`pdf-bars`, version 1.7.2).
 Never mark a build here as 1.6 or add corporate reporting, logos or contacts.
 Corporate `release/1.6` lives separately at `C:\Project\pdf-bars-1.6`, using
 the `redos-pdf-bars` package and its own remote. Do not cross-publish sources.

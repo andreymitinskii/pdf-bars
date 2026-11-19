@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdf-bars"
-version = "1.7.1"
+version = "1.7.2"
 description = "pdf bars toolkit for RED OS 7.3 and RED OS 8"
 readme = "README.md"
 requires-python = ">=3.8"

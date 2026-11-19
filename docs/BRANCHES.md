@@ -1,8 +1,9 @@
 # Release Lines
 
 This repository and checkout contain the public `release/1.7` line only.
-Application version: 1.7.1. RPM package: `pdf-bars`. Configuration and cache
-use `pdf-bars-public` on Linux and `PDFBarsPublic` on Windows.
+Application version: 1.7.2. RPM package: `pdf-bars`. Configuration, the
+signature library and cache use `pdf-bars-public` on Linux and `PDFBarsPublic`
+on Windows.
 
 The corporate 1.6 line is a separate repository and checkout:
 `C:\Project\pdf-bars-1.6`, branch `release/1.6`, package `redos-pdf-bars`.

@@ -2,7 +2,7 @@
 set -eu
 
 APP_NAME="pdf-bars"
-VERSION="1.7.1"
+VERSION="1.7.2"
 case "$VERSION" in 1.7|1.7.*) ;; *) echo "This checkout builds only the public 1.7 line" >&2; exit 1 ;; esac
 ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 BUILD_ROOT="${BUILD_ROOT:-$HOME/rpmbuild}"

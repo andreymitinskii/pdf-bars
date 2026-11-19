@@ -8,11 +8,13 @@ import shutil
 import subprocess
 import tempfile
 
-COMMANDS = {"redos-pdf-gui", "pdf-bars-gui", "redos-pdf-combiner-gui"}
+PUBLIC_COMMAND = "pdf-bars-gui"
 
 
 def launcher_command(path: Path) -> str:
     try:
+        if path.is_symlink() or not path.is_file():
+            return ""
         config = configparser.ConfigParser(interpolation=None, strict=False)
         config.read_string(path.read_text(encoding="utf-8-sig"))
         args = shlex.split(config.get("Desktop Entry", "Exec", fallback=""))
@@ -21,7 +23,7 @@ def launcher_command(path: Path) -> str:
             while args and ("=" in args[0] or args[0] == "--"):
                 args.pop(0)
         command = Path(args[0]).name if args else ""
-        return command if command in COMMANDS else ""
+        return command if command == PUBLIC_COMMAND else ""
     except (OSError, UnicodeError, ValueError, configparser.Error):
         return ""
 
@@ -29,7 +31,7 @@ def launcher_command(path: Path) -> str:
 def sync_shortcut(entry: Path, desktop: Path, other_desktops=()) -> Path:
     desktop.mkdir(parents=True, exist_ok=True)
     owned = sorted((p for p in desktop.glob("*.desktop") if launcher_command(p)),
-        key=lambda p: (p.name != "pdf bars.desktop", launcher_command(p).startswith("redos-"), p.name))
+        key=lambda p: (p.name != "pdf bars.desktop", not p.name.startswith("pdf bars ("), p.name))
     target = owned[0] if owned else desktop / "pdf bars.desktop"
     index = 1
     while (target.exists() or target.is_symlink()) and not launcher_command(target):

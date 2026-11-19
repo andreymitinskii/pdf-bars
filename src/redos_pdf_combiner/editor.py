@@ -16,6 +16,7 @@ from typing import List, Sequence, Tuple
 
 from . import __version__
 from .pdf_standards import remove_pdfa_declaration
+from .preferences import preferences_path
 
 
 RectTuple = Tuple[float, float, float, float]
@@ -1364,11 +1365,7 @@ def _int_box(rect: RectTuple) -> Tuple[int, int, int, int]:
 
 
 def signature_directory() -> Path:
-    if os.name == "nt":
-        base = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming"))
-        directory = base / "PDFBars" / "signatures"
-    else:
-        directory = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "pdf-bars" / "signatures"
+    directory = preferences_path().parent / "signatures"
     directory.mkdir(parents=True, exist_ok=True)
     return directory
 

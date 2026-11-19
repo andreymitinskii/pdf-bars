@@ -2,7 +2,7 @@
 set -eu
 
 APP_NAME="pdf-bars"
-VERSION="1.7"
+VERSION="1.7.2"
 ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 OUT_DIR="$ROOT_DIR/dist"
 TMP_DIR=$(mktemp -d)

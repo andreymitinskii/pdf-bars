@@ -1,5 +1,5 @@
 Name:           pdf-bars
-Version:        1.7.1
+Version:        1.7.2
 Release:        1
 Summary:        pdf bars utility toolkit for RED OS
 License:        AGPL-3.0-or-later
@@ -36,7 +36,6 @@ install -d %{buildroot}%{_bindir}
 install -d %{buildroot}%{_libexecdir}
 install -d %{buildroot}%{_datadir}/applications
 install -d %{buildroot}%{_sysconfdir}/xdg/autostart
-install -d %{buildroot}%{_sysconfdir}/pdf-bars
 install -d %{buildroot}%{_datadir}/icons
 cp -R src docs README.md LICENSE THIRD_PARTY_NOTICES.md requirements.txt %{buildroot}%{_datadir}/%{name}/
 if [ -d packaging/icons ]; then
@@ -69,8 +68,6 @@ install -m 0644 packaging/pdf-bars.desktop %{buildroot}%{_datadir}/applications/
 install -m 0644 packaging/pdf-bars-create-shortcut.desktop %{buildroot}%{_sysconfdir}/xdg/autostart/pdf-bars-create-shortcut.desktop
 
 %post
-rm -f /usr/local/share/applications/pdf-bars-combiner.desktop
-rm -f /usr/local/share/applications/pdf-bars.desktop
 if command -v update-desktop-database >/dev/null 2>&1; then
   update-desktop-database %{_datadir}/applications >/dev/null 2>&1 || true
 fi
@@ -103,6 +100,10 @@ fi
 %{_datadir}/icons/hicolor/*/apps/pdf-bars.png
 
 %changelog
+* Thu Nov 19 2026 pdf bars contributors - 1.7.2-1
+- Use native GTK file dialogs and publish copied regions as images.
+- Isolate public signatures and desktop shortcuts from the corporate edition.
+
 * Mon Nov 16 2026 pdf bars contributors - 1.7.1-1
 - Add Russian/English interface selection and remove the startup release popup.
 

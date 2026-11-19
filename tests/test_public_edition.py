@@ -16,8 +16,8 @@ def test_public_application_has_no_network_reporting():
 def test_public_package_identity():
     from redos_pdf_combiner import __version__
     from redos_pdf_combiner.gui import APP_TITLE
-    assert __version__ == '1.7.1'
+    assert __version__ == '1.7.2'
     assert APP_TITLE == 'pdf bars'
     spec=(ROOT/'packaging/pdf-bars.spec').read_text(encoding='utf-8')
-    assert 'Version:        1.7.1' in spec
+    assert 'Version:        1.7.2' in spec
     assert 'Release:        1' in spec

@@ -1,7 +1,7 @@
 [Setup]
 AppId={{426E7F00-B148-4B7D-BA95-682EC6593CA2}
 AppName=pdf bars
-AppVersion=1.7.1
+AppVersion=1.7.2
 AppPublisher=pdf bars contributors
 AppPublisherURL=https://github.com/andreymitinskii/pdf-bars
 DefaultDirName={code:DefaultInstallDirectory}
@@ -10,8 +10,8 @@ DefaultGroupName=pdf bars
 PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=commandline
 LanguageDetectionMethod=uilanguage
-OutputDir=..\..\release\1.7.1
-OutputBaseFilename=pdf-bars-1.7.1-windows-x64-setup
+OutputDir=..\..\release\1.7.2
+OutputBaseFilename=pdf-bars-1.7.2-windows-x64-setup
 Compression=lzma2
 SolidCompression=yes
 ArchitecturesAllowed=x64compatible

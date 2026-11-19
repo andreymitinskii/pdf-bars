@@ -27,8 +27,8 @@ def test_desktop_shortcut_is_packaged_for_install_and_first_login():
 
 
 def test_application_version_is_consistent():
-    assert '__version__ = "1.7.1"' in source_text(ROOT / "src" / "redos_pdf_combiner" / "__init__.py")
-    assert 'version = "1.7.1"' in source_text(ROOT / "pyproject.toml")
+    assert '__version__ = "1.7.2"' in source_text(ROOT / "src" / "redos_pdf_combiner" / "__init__.py")
+    assert 'version = "1.7.2"' in source_text(ROOT / "pyproject.toml")
 
 
 
